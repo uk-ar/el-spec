@@ -72,23 +72,8 @@
      (push ,desc el-spec:descriptions)
      (push " " el-spec:descriptions)
      ,@body
-     )
-  )
+     ))
 
-(setq li nil)
-
-(context "a"
-  (before
-   (message "a0"))
-  (context "b"
-    (before
-     (message "a1"))
-    (it
-     (message "ex1")))
-li
-
-;; li
-(setq li nil)
 (defmacro describe (desc &rest body)
   (declare (indent 1))
   (unless (stringp desc)
@@ -99,25 +84,4 @@ li
      (push " " el-spec:descriptions)
      ,@body
      ))
-(around
- (message "a0")
- (funcall example)
- (message "b0")
- )
-(around
- (message "a1")
- (funcall example)
- (message "b1")
- )
-(before
- (message "a2")
- )
-(before
- (message "a3")
- )
-(it
- (message "ex")
- )
-(it
- (message "ex2")
- )
+
