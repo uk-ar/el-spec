@@ -88,6 +88,16 @@ li
 
 ;; li
 (setq li nil)
+(defmacro describe (desc &rest body)
+  (declare (indent 1))
+  (unless (stringp desc)
+    (error "%S is not string" desc))
+  `(let ((el-spec:full-context nil)
+         (el-spec:descriptions nil))
+     (push ,desc el-spec:descriptions)
+     (push " " el-spec:descriptions)
+     ,@body
+     ))
 (around
  (message "a0")
  (funcall example)
