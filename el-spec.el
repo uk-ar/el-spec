@@ -61,6 +61,8 @@
                          el-spec:full-context)))
     ))
 
+(defconst el-spec:separator "\n")
+
 (defmacro context (desc &rest body)
   (declare (indent 1))
   (unless (stringp desc)
@@ -70,7 +72,7 @@
          (el-spec:descriptions
           (if (boundp 'el-spec:descriptions) el-spec:descriptions nil)))
      (push ,desc el-spec:descriptions)
-     (push " " el-spec:descriptions)
+     (push el-spec:separator el-spec:descriptions)
      ,@body
      ))
 
@@ -81,7 +83,7 @@
   `(let ((el-spec:full-context nil)
          (el-spec:descriptions nil))
      (push ,desc el-spec:descriptions)
-     (push " " el-spec:descriptions)
+     (push el-spec:separator el-spec:descriptions)
      ,@body
      ))
 
@@ -109,33 +111,59 @@
 (ert-deftest describe-initial-value ()
   (should (eq el-spec:full-context nil))
   (should (equal el-spec:descriptions nil))
-  (describe "a"
+  (describe "describe"
     (should (eq el-spec:full-context nil))
-    (should (equal el-spec:descriptions '(" " "a")))
+    (should (equal el-spec:descriptions '("\n" "describe")))
+    )
+  (should (eq el-spec:full-context nil))
+  (should (equal el-spec:descriptions nil))
+  )
+
+(ert-deftest el-spec:test-describe-it ()
+  (describe "describe"
+    (should (eq el-spec:full-context nil))
+    (should (equal el-spec:descriptions '("\n" "describe")))
+    (should (equal (ert-test-boundp (intern "describe\nexample")) nil))
+
+    (it "it" (message "example"))
+    (should (eq el-spec:full-context nil))
+    (should (equal el-spec:descriptions '("\n" "describe")))
+    (should (equal (ert-test-boundp (intern "describe\nit")) t))
+
+    (let ((result (ert-run-test
+                   (ert-get-test (intern "describe\nit")))))
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "example\n")))
     )
   )
 (ert-deftest describe-before ()
-  (describe "a"
+  (describe "describe"
     (should (eq el-spec:full-context nil))
-    (should (equal el-spec:descriptions '(" " "a")))
-    (before "b")
+    (should (equal el-spec:descriptions '("\n" "describe")))
+
+    (before (message "before"))
     (should (equal el-spec:full-context
                    '((lambda (el-spec:example)
-                       "b"
+                       (message "before")
                        (funcall el-spec:example)))))
-    (should (equal el-spec:descriptions '(" " "a")))
+    (should (equal el-spec:descriptions '("\n" "describe")))
     )
   )
 
 (ert-deftest describe-after ()
-  (describe "a"
+  (describe "describe"
     (should (eq el-spec:full-context nil))
-    (should (equal el-spec:descriptions '(" " "a")))
-    (after "b")
+    (should (equal el-spec:descriptions '("\n" "describe")))
+
+    (after (message "after"))
     (should (equal el-spec:full-context
                    '((lambda (el-spec:example)
-                       (funcall el-spec:example) "b"))))
-    (should (equal el-spec:descriptions '(" " "a")))
+                       (funcall el-spec:example)
+                       (message "after")))))
+    (should (equal el-spec:descriptions '("\n" "describe")))
+    )
+  )
     )
   )
 
