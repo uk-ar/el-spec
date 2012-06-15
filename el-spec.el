@@ -109,7 +109,7 @@
 (setq el-spec:full-context nil)
 (setq el-spec:descriptions nil)
 ;;; self-test
-(ert-deftest describe-initial-value ()
+(ert-deftest el-spec:test-describe-initial-value ()
   (should (eq el-spec:full-context nil))
   (should (equal el-spec:descriptions nil))
   (describe "describe"
@@ -138,7 +138,8 @@
                      "example\n")))
     )
   )
-(ert-deftest describe-before ()
+
+(ert-deftest el-spec:test-describe-before ()
   (describe "describe"
     (should (eq el-spec:full-context nil))
     (should (equal el-spec:descriptions '("\n" "describe")))
@@ -152,7 +153,7 @@
     )
   )
 
-(ert-deftest describe-after ()
+(ert-deftest el-spec:test-describe-after ()
   (describe "describe"
     (should (eq el-spec:full-context nil))
     (should (equal el-spec:descriptions '("\n" "describe")))
