@@ -81,6 +81,11 @@
   (declare (indent 1))
   (unless (stringp desc)
     (error "%S is not string" desc))
+  ;; for failed test
+  (makunbound 'el-spec:full-context)
+  (makunbound 'el-spec:descriptions)
+  (makunbound 'el-spec:vars)
+
   `(let ((el-spec:full-context nil)
          (el-spec:descriptions nil))
      (push ,desc el-spec:descriptions)
@@ -106,8 +111,6 @@
 ;;         (message "ex2"))
 ;;     ))
 
-(setq el-spec:full-context nil)
-(setq el-spec:descriptions nil)
 ;;; self-test
 (ert-deftest el-spec:test-describe-initial-value ()
   (should (eq el-spec:full-context nil))
