@@ -23,6 +23,8 @@
 ;;
 ;;-------------------------------------------------------------------
 
+(require 'ert)
+
 (defmacro around (&rest body)
   (push
    `(lambda (el-spec:example)
