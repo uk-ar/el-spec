@@ -167,3 +167,26 @@
     )
   )
 
+;; copy from el-expectations
+(defun el-sepc:current-form-is-describe ()
+  (save-excursion
+    (beginning-of-defun)
+    (looking-at "(describe\\|(.+(fboundp 'describe)\\|(dont-compile\n.*describe")))
+
+(substitute-key-definition 'expectations-eval-defun 'eval-defun emacs-lisp-mode-map)
+(substitute-key-definition 'expectations-eval-defun 'eval-defun lisp-interaction-mode-map)
+
+(defadvice eval-defun (around el-spec:eval-defun activate)
+  (if (not (and (interactive-p)
+                (el-sepc:current-form-is-describe)))
+      ad-do-it
+    (ert-delete-all-tests)
+    ad-do-it
+    (ert t)
+    ))
+(defun my-ert ()
+  (interactive)
+  (ert-delete-all-tests)
+  (eval-buffer)
+  (ert t)
+  )
