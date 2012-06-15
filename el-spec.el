@@ -85,3 +85,57 @@
      ,@body
      ))
 
+;;; useage
+;;
+;; (describe "a"
+;;   (before
+;;    (message "a0"))
+;;   (context "b"
+;;     (before
+;;      (message "a1"))
+;;     (it "ex1"
+;;         (message "ex1")
+;;         (should nil)))
+;;   (context "c"
+;;     (before
+;;      (message "a2"))
+;;     (it "ex2"
+;;         (message "ex2"))
+;;     ))
+
+(setq el-spec:full-context nil)
+(setq el-spec:descriptions nil)
+;;; self-test
+(ert-deftest describe-initial-value ()
+  (should (eq el-spec:full-context nil))
+  (should (equal el-spec:descriptions nil))
+  (describe "a"
+    (should (eq el-spec:full-context nil))
+    (should (equal el-spec:descriptions '(" " "a")))
+    )
+  )
+(ert-deftest describe-before ()
+  (describe "a"
+    (should (eq el-spec:full-context nil))
+    (should (equal el-spec:descriptions '(" " "a")))
+    (before "b")
+    (should (equal el-spec:full-context
+                   '((lambda (el-spec:example)
+                       "b"
+                       (funcall el-spec:example)))))
+    (should (equal el-spec:descriptions '(" " "a")))
+    )
+  )
+
+(ert-deftest describe-after ()
+  (describe "a"
+    (should (eq el-spec:full-context nil))
+    (should (equal el-spec:descriptions '(" " "a")))
+    (after "b")
+    (should (equal el-spec:full-context
+                   '((lambda (el-spec:example)
+                       (funcall el-spec:example) "b"))))
+    (should (equal el-spec:descriptions '(" " "a")))
+    )
+  )
+
