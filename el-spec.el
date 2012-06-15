@@ -33,9 +33,9 @@
 (defmacro before (&rest body)
   `(around
     ,@body
-    )
-  )
     (funcall el-spec:example)
+    ))
+
 (defmacro after (&rest body)
   `(around
     (funcall el-spec:example)
@@ -47,6 +47,7 @@
   `(lambda () (funcall (function ,g) (function ,f))))
 
 (defmacro it (desc &rest body)
+  (declare (indent 1))
   (unless (stringp desc)
     (error "%S is not string" desc))
   (lexical-let ((el-spec:full-context el-spec:full-context)
