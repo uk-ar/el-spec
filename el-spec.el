@@ -59,9 +59,14 @@
         ,@body)
      el-spec:full-context)
     (push desc el-spec:descriptions)
-    `(ert-deftest ,(intern (apply 'concat (reverse el-spec:descriptions))) ()
-       (funcall ,(reduce #'el-spec:compose
-                         el-spec:full-context)))
+    `(lexical-let ,(mapcar (lambda (var)
+                             `(,var ,var)) el-spec:vars)
+       (ert-deftest ,(intern
+                      (apply 'concat (reverse el-spec:descriptions))) ()
+         (funcall ,(reduce #'el-spec:compose
+                           el-spec:full-context))
+         )
+       )
     ))
 
 (defconst el-spec:separator "\n")
@@ -93,6 +98,18 @@
        ,@body
        )
      ))
+
+(defmacro el-spec:let (varlist &rest body)
+  (declare (indent 1))
+  (mapcar (lambda (element)
+            (add-to-list 'el-spec:vars
+                         (if (consp element)
+                             (car element)
+                           element))) varlist)
+  `(let ,varlist
+     ,@body
+     )
+  )
 
 ;;; useage
 ;;
