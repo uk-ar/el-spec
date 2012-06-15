@@ -25,39 +25,41 @@
 
 (defmacro around (&rest body)
   (push
-   `(lambda (example)
+   `(lambda (el-spec:example)
       ,@body)
-   li)
+   el-spec:full-context)
   nil)
 
 (defmacro before (&rest body)
   `(around
     ,@body
-    (funcall example)
     )
   )
+    (funcall el-spec:example)
 (defmacro after (&rest body)
   `(around
-    (funcall example)
+    (funcall el-spec:example)
     ,@body
     )
   )
 
-(defun compose (f g)
+(defun el-spec:compose (f g)
   `(lambda () (funcall (function ,g) (function ,f))))
 
-(defmacro it (&rest body)
-  (lexical-let ((li li))
+(defmacro it (desc &rest body)
+  (lexical-let ((el-spec:full-context el-spec:full-context))
     (push
      `(lambda ()
         ,@body)
-     li)
-    (funcall (reduce #'compose li))
+     el-spec:full-context)
+       `(funcall ,(reduce #'el-spec:compose
+                          el-spec:full-context))
     ))
 
 (defmacro context (desc &rest body)
   (declare (indent 1))
-  `(lexical-let ((li li))
+  `(let ((el-spec:full-context
+          (if (boundp 'el-spec:full-context) el-spec:full-context nil)))
      ,@body
      )
   )
