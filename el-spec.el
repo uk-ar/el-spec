@@ -56,8 +56,9 @@
         ,@body)
      el-spec:full-context)
     (push desc el-spec:descriptions)
-       `(funcall ,(reduce #'el-spec:compose
-                          el-spec:full-context))
+    `(ert-deftest ,(intern (apply 'concat (reverse el-spec:descriptions))) ()
+       (funcall ,(reduce #'el-spec:compose
+                         el-spec:full-context)))
     ))
 
 (defmacro context (desc &rest body)
