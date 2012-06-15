@@ -47,19 +47,29 @@
   `(lambda () (funcall (function ,g) (function ,f))))
 
 (defmacro it (desc &rest body)
-  (lexical-let ((el-spec:full-context el-spec:full-context))
+  (unless (stringp desc)
+    (error "%S is not string" desc))
+  (lexical-let ((el-spec:full-context el-spec:full-context)
+                (el-spec:descriptions el-spec:descriptions))
     (push
      `(lambda ()
         ,@body)
      el-spec:full-context)
+    (push desc el-spec:descriptions)
        `(funcall ,(reduce #'el-spec:compose
                           el-spec:full-context))
     ))
 
 (defmacro context (desc &rest body)
   (declare (indent 1))
+  (unless (stringp desc)
+    (error "%S is not string" desc))
   `(let ((el-spec:full-context
-          (if (boundp 'el-spec:full-context) el-spec:full-context nil)))
+          (if (boundp 'el-spec:full-context) el-spec:full-context nil))
+         (el-spec:descriptions
+          (if (boundp 'el-spec:descriptions) el-spec:descriptions nil)))
+     (push ,desc el-spec:descriptions)
+     (push " " el-spec:descriptions)
      ,@body
      )
   )
