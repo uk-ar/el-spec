@@ -77,20 +77,19 @@
      ,@body
      ))
 
-(defmacro describe (desc &rest body)
+(defmacro describe (arglist &rest body)
   (declare (indent 1))
-  (unless (stringp desc)
-    (error "%S is not string" desc))
   ;; for failed test
   (makunbound 'el-spec:full-context)
   (makunbound 'el-spec:descriptions)
   (makunbound 'el-spec:vars)
 
   `(let ((el-spec:full-context nil)
-         (el-spec:descriptions nil))
-     (push ,desc el-spec:descriptions)
-     (push el-spec:separator el-spec:descriptions)
-     ,@body
+         (el-spec:descriptions nil)
+         (el-spec:vars nil))
+     (context ,arglist
+       ,@body
+       )
      ))
 
 ;;; useage
