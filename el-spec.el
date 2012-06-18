@@ -48,26 +48,35 @@
 (defun el-spec:compose (f g)
   `(lambda () (funcall (function ,g) (function ,f))))
 
-(defmacro it (desc &rest body)
+(defmacro it (arglist &rest body)
   (declare (indent 1))
-  (unless (stringp desc)
-    (error "%S is not string" desc))
-  (lexical-let ((el-spec:full-context el-spec:full-context)
-                (el-spec:descriptions el-spec:descriptions))
-    (push
-     `(lambda ()
-        ,@body)
-     el-spec:full-context)
-    (push desc el-spec:descriptions)
-    `(lexical-let ,(mapcar (lambda (var)
-                             `(,var ,var)) el-spec:vars)
-       (ert-deftest ,(intern
-                      (apply 'concat (reverse el-spec:descriptions))) ()
-         (funcall ,(reduce #'el-spec:compose
-                           el-spec:full-context))
-         )
-       )
+  (cond
+   ((stringp arglist)
+    (setq arglist (list arglist)))
+   ((null arglist)
+    (setq arglist (list (format "%S" body))))
+   ((not (stringp (car arglist)))
+    (push (format "%S" body) arglist))
+   ((not (consp arglist))
+    (error "%S is not string or list or nil" arglist)
     ))
+  (destructuring-bind (&optional desc &key vars) arglist
+    (lexical-let ((el-spec:full-context el-spec:full-context)
+                  (el-spec:descriptions el-spec:descriptions))
+      (push
+       `(lambda () ,@body)
+       el-spec:full-context)
+      (push (or desc (list (format "%S" body))) el-spec:descriptions)
+      `(el-spec:let ,vars
+         (lexical-let ,(mapcar (lambda (var)
+                                 `(,var ,var)) el-spec:vars)
+           (ert-deftest ,(intern
+                          (apply 'concat (reverse el-spec:descriptions))) ()
+             (funcall ,(reduce #'el-spec:compose
+                               el-spec:full-context))
+             )
+           )
+         ))))
 
 (defconst el-spec:separator "\n")
 
