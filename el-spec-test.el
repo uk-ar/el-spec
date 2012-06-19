@@ -25,14 +25,14 @@
 
  ;;; self-test
 (ert-deftest el-spec:test-describe-initial-value ()
-  (should (eq el-spec:full-context nil))
-  (should (equal el-spec:descriptions nil))
+  (should (not (boundp 'el-spec:full-context)))
+  (should (not (boundp 'el-spec:descriptions)))
   (describe "describe"
     (should (eq el-spec:full-context nil))
     (should (equal el-spec:descriptions '("\n" "describe")))
     )
-  (should (eq el-spec:full-context nil))
-  (should (equal el-spec:descriptions nil))
+  (should (not (boundp 'el-spec:full-context)))
+  (should (not (boundp 'el-spec:descriptions)))
   )
 
 (ert-deftest el-spec:test-describe-it ()
