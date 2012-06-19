@@ -124,7 +124,8 @@
                  (ert-get-test (intern "nested before\ncontext1\nit1")))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
-                   "before0
+                   "\
+before0
 before1
 example1
 ")))
@@ -134,7 +135,8 @@ example1
                  (ert-get-test (intern "nested before\ncontext2\nit2")))))
     (should (ert-test-failed-p result))
     (should (equal (ert-test-result-messages result)
-                   "before0
+                   "\
+before0
 before2
 example2
 ")))
@@ -163,7 +165,8 @@ example2
                  (ert-get-test (intern "nested after\ncontext1\nit1")))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
-                   "example1
+                   "\
+example1
 after1
 after0
 ")))
@@ -173,7 +176,8 @@ after0
                  (ert-get-test (intern "nested after\ncontext2\nit2")))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
-                   "example2
+                   "\
+example2
 after2
 after0
 ")))
@@ -211,7 +215,8 @@ after0
                  (ert-get-test (intern "nested around\ncontext1\nit1")))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
-                   "around01
+                   "\
+around01
 around11
 example1
 around12
@@ -223,7 +228,8 @@ around02
                  (ert-get-test (intern "nested around\ncontext2\nit2")))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
-                   "around01
+                   "\
+around01
 around21
 example2
 around22
@@ -255,7 +261,8 @@ around02
                  (ert-get-test (intern "nested mix\ncontext1\nit1")))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
-                   "around1
+                   "\
+around1
 before
 example1
 around2
@@ -266,7 +273,8 @@ around2
                  (ert-get-test (intern "nested mix\ncontext2\nit2")))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
-                   "around1
+                   "\
+around1
 example2
 after
 around2
