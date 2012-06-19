@@ -93,7 +93,9 @@
     `(let ((el-spec:full-context
             (if (boundp 'el-spec:full-context) el-spec:full-context nil))
            (el-spec:descriptions
-            (if (boundp 'el-spec:descriptions) el-spec:descriptions nil)))
+            (if (boundp 'el-spec:descriptions) el-spec:descriptions nil))
+           (el-spec:vars
+            (if (boundp 'el-spec:descriptions) el-spec:vars nil)))
        (push ,desc el-spec:descriptions)
        (push el-spec:separator el-spec:descriptions)
        ;; fix?
@@ -178,14 +180,17 @@
     `(setq
       ,(intern (format "el-spec:context-%s" desc))
       (let ((el-spec:full-context nil)
-            (el-spec:descriptions nil))
+            (el-spec:descriptions nil)
+            (el-spec:vars nil))
         (push ,desc el-spec:descriptions)
         (push el-spec:separator el-spec:descriptions)
         ;; fix?
         (el-spec:let ,vars
           ,@body
           )
-        (list el-spec:full-context el-spec:descriptions)
+        (list el-spec:full-context
+              el-spec:descriptions
+              el-spec:vars)
         )
       )
     ))
@@ -197,6 +202,8 @@
                                        el-spec:full-context))
     (setq el-spec:descriptions (append (nth 1 (symbol-value context))
                                        el-spec:descriptions))
+    (setq el-spec:vars (append (nth 2 (symbol-value context))
+                                       el-spec:vars))
     ))
 
 (defun my-ert ()
