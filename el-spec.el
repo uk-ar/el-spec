@@ -165,6 +165,40 @@
     ad-do-it
     (ert t)
     ))
+
+(defmacro shared-context (arglist &rest body)
+  (declare (indent 1))
+  (cond
+   ((stringp arglist)
+    (setq arglist (list arglist)))
+   ((not (consp arglist))
+    (error "%S is not string or list" arglist)
+    ))
+  (destructuring-bind (desc &key vars) arglist
+    `(setq
+      ,(intern (format "el-spec:context-%s" desc))
+      (let ((el-spec:full-context nil)
+            (el-spec:descriptions nil))
+        (push ,desc el-spec:descriptions)
+        (push el-spec:separator el-spec:descriptions)
+        ;; fix?
+        (el-spec:let ,vars
+          ,@body
+          )
+        (list el-spec:full-context el-spec:descriptions)
+        )
+      )
+    ))
+
+(defmacro include-context (desc)
+  `(let ((context
+            (intern (format "el-spec:context-%s" ,desc))))
+    (setq el-spec:full-context (append (car (symbol-value context))
+                                       el-spec:full-context))
+    (setq el-spec:descriptions (append (nth 1 (symbol-value context))
+                                       el-spec:descriptions))
+    ))
+
 (defun my-ert ()
   (interactive)
   (ert-delete-all-tests)

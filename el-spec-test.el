@@ -280,3 +280,67 @@ after
 around2
 ")))
   )
+
+(ert-deftest el-spec:test-shared-context ()
+  (should (equal (ert-test-boundp
+                  (intern "shared context\ncontext1\ncontext0\nit1")) nil))
+  (should (equal (ert-test-boundp
+                  (intern "shared context\ncontext2\ncontext0\nit1")) nil))
+  (describe "shared context"
+    (shared-context "context0"
+      (before
+       (message "before01")
+       )
+      (after
+       (message "after01")
+       )
+      )
+
+    (context "context1"
+      (include-context "context0")
+
+      (around
+       (message "around11")
+       (funcall el-spec:example)
+       (message "around12")
+       )
+      (it "it1"
+        (message "example1")))
+
+    (context "context2"
+      (include-context "context0")
+
+      (around
+       (message "around21")
+       (funcall el-spec:example)
+       (message "around22")
+       )
+      (it "it2"
+        (message "example2")
+        )))
+
+  (let ((result (ert-run-test
+                 (ert-get-test
+                  (intern "shared context\ncontext1\ncontext0\nit1")))))
+    (should (ert-test-passed-p result))
+    (should (equal (ert-test-result-messages result)
+                   "\
+before01
+around11
+example1
+around12
+after01
+")))
+  (let ((result (ert-run-test
+                 (ert-get-test
+                  (intern "shared context\ncontext2\ncontext0\nit2")))))
+    (should (ert-test-passed-p result))
+    (should (equal (ert-test-result-messages result)
+                   "\
+before01
+around21
+example2
+around22
+after01
+")))
+  )
