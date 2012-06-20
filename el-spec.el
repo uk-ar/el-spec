@@ -67,16 +67,20 @@
        `(lambda () ,@body)
        el-spec:full-context)
       (push (or desc (list (format "%S" body))) el-spec:descriptions)
+      (let ((test-symbol (intern
+                          (apply 'concat (reverse el-spec:descriptions)))))
+        (when (ert-test-boundp test-symbol)
+          (warn "test function \"%s\" already exist" test-symbol))
       `(el-spec:let ,vars
          (lexical-let ,(mapcar (lambda (var)
                                  `(,var ,var)) el-spec:vars)
-           (ert-deftest ,(intern
-                          (apply 'concat (reverse el-spec:descriptions))) ()
+           (ert-deftest ,test-symbol ()
              (funcall ,(reduce #'el-spec:compose
                                el-spec:full-context))
              )
            )
-         ))))
+         )
+      ))))
 
 (defconst el-spec:separator "\n")
 
