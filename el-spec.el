@@ -212,3 +212,6 @@
   (eval-buffer)
   (ert t)
   )
+
+(provide 'el-spec)
+;;; el-spec.el ends here
