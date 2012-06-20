@@ -170,30 +170,18 @@
 
 (defmacro shared-context (arglist &rest body)
   (declare (indent 1))
-  (cond
-   ((stringp arglist)
-    (setq arglist (list arglist)))
-   ((not (consp arglist))
-    (error "%S is not string or list" arglist)
-    ))
-  (destructuring-bind (desc &key vars) arglist
-    `(setq
-      ,(intern (format "el-spec:context-%s" desc))
-      (let ((el-spec:full-context nil)
-            (el-spec:descriptions nil)
-            (el-spec:vars nil))
-        (push ,desc el-spec:descriptions)
-        (push el-spec:separator el-spec:descriptions)
-        ;; fix?
-        (el-spec:let ,vars
-          ,@body
-          )
-        (list el-spec:full-context
-              el-spec:descriptions
-              el-spec:vars)
-        )
-      )
-    ))
+  `(let ((el-spec:full-context nil)
+         (el-spec:descriptions nil)
+         (el-spec:vars nil))
+     (context ,arglist
+       ,@body
+       ;; (message "des:%S" (car (last el-spec:descriptions)))
+       (set (intern (format "el-spec:context-%s"
+                            (car (last el-spec:descriptions))))
+            (list el-spec:full-context
+                  el-spec:descriptions
+                  el-spec:vars))
+       )))
 
 (defmacro include-context (desc)
   `(let ((context
