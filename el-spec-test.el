@@ -282,10 +282,11 @@ around2
   )
 
 (ert-deftest el-spec:test-shared-context ()
-  (should (equal (ert-test-boundp
-                  (intern "shared context\ncontext1\ncontext0\nit1")) nil))
-  (should (equal (ert-test-boundp
-                  (intern "shared context\ncontext2\ncontext0\nit1")) nil))
+  (let ((ex1 (intern "shared context\ncontext1\nit1"))
+        (ex2 (intern "shared context\ncontext2\nit2"))
+        )
+    (should (equal (ert-test-boundp ex1) nil))
+    (should (equal (ert-test-boundp ex2) nil))
   (describe "shared context"
     (shared-context "context0"
       (before
@@ -320,8 +321,7 @@ around2
         )))
 
   (let ((result (ert-run-test
-                 (ert-get-test
-                  (intern "shared context\ncontext1\ncontext0\nit1")))))
+                 (ert-get-test ex1))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
                    "\
@@ -332,8 +332,7 @@ around12
 after01
 ")))
   (let ((result (ert-run-test
-                 (ert-get-test
-                  (intern "shared context\ncontext2\ncontext0\nit2")))))
+                 (ert-get-test ex2))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
                    "\
@@ -343,15 +342,16 @@ example2
 around22
 after01
 ")))
-  )
+  ))
 
 (ert-deftest el-spec:test-nested-shared-context ()
-  (should (equal (ert-test-boundp
-                  (intern "nested shared context\ncontext1\ncontext0\nit1")) nil))
-  (should (equal (ert-test-boundp
-                  (intern "nested shared context\ncontext2\ncontext0\nit1")) nil))
-  (describe "nested shared context"
+  (let ((ex1 (intern "nested shared context\ncontext1\nit1"))
+        (ex2 (intern "nested shared context\ncontext2\nit2"))
+        )
+    (should (equal (ert-test-boundp ex1) nil))
+    (should (equal (ert-test-boundp ex2) nil))
 
+    (describe "nested shared context"
     (shared-context "context00"
       (before
        (message "before001")
@@ -400,8 +400,7 @@ after01
         )))
 
   (let ((result (ert-run-test
-                 (ert-get-test
-                  (intern "nested shared context\ncontext1\ncontext0\ncontext00\nit1")))))
+                   (ert-get-test ex1))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
                    "\
@@ -416,8 +415,7 @@ after001
 after01
 ")))
   (let ((result (ert-run-test
-                 (ert-get-test
-                  (intern "nested shared context\ncontext2\ncontext0\ncontext00\nit2")))))
+                   (ert-get-test ex2))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
                    "\
@@ -431,4 +429,5 @@ after02
 after001
 after01
 ")))
+    ))
   )
