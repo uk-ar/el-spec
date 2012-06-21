@@ -238,8 +238,11 @@ around02
   )
 
 (ert-deftest el-spec:test-nested-mix ()
-  (should (equal (ert-test-boundp (intern "nested mix\ncontext1\nit1")) nil))
-  (should (equal (ert-test-boundp (intern "nested mix\ncontext2\nit2")) nil))
+  (let ((ex1 (intern "nested mix\ncontext1\nit1"))
+        (ex2 (intern "nested mix\ncontext2\nit2"))
+        )
+    (should (equal (ert-test-boundp ex1) nil))
+    (should (equal (ert-test-boundp ex2) nil))
   (describe "nested mix"
     (around
      (message "around1")
@@ -256,9 +259,8 @@ around02
         (message "example2")
         )))
 
-  (should (equal (ert-test-boundp (intern "nested mix\ncontext1\nit1")) t))
   (let ((result (ert-run-test
-                 (ert-get-test (intern "nested mix\ncontext1\nit1")))))
+                   (ert-get-test ex1))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
                    "\
@@ -268,9 +270,8 @@ example1
 around2
 ")))
 
-  (should (equal (ert-test-boundp (intern "nested mix\ncontext2\nit2")) t))
   (let ((result (ert-run-test
-                 (ert-get-test (intern "nested mix\ncontext2\nit2")))))
+                   (ert-get-test ex2))))
     (should (ert-test-passed-p result))
     (should (equal (ert-test-result-messages result)
                    "\
@@ -279,7 +280,7 @@ example2
 after
 around2
 ")))
-  )
+    ))
 
 (ert-deftest el-spec:test-shared-context ()
   (let ((ex1 (intern "shared context\ncontext1\nit1"))
@@ -354,26 +355,21 @@ after01
     (describe "nested shared context"
     (shared-context "context00"
       (before
-       (message "before001")
-       )
+         (message "before001"))
       (after
-       (message "after001")
-       )
-      )
+         (message "after001")))
     (shared-context "context0"
       (before
-       (message "before01")
-       )
+         (message "before01"))
       (after
-       (message "after01")
-       )
+         (message "after01"))
+
       (include-context "context00")
+
       (before
-       (message "before02")
-       )
+         (message "before02"))
       (after
-       (message "after02")
-       )
+         (message "after02"))
       )
 
     (context "context1"

@@ -39,6 +39,15 @@
     ))
 
 (defmacro after (&rest body)
+  ;; don't use around macro because of `el-spec:example' variable binding
+  ;; use `el-spec:example' for test ability
+  ;; (let ((example-sym (make-symbol "example")))
+  ;;   (push
+  ;;    `(lambda (,example-sym)
+  ;;       (funcall ,example-sym)
+  ;;       ,@body)
+  ;;    el-spec:full-context))
+  ;; nil)
   `(around
     (funcall el-spec:example)
     ,@body
@@ -127,10 +136,9 @@
 (defmacro el-spec:let (varlist &rest body)
   (declare (indent 1))
   (mapcar (lambda (element)
-            (add-to-list 'el-spec:vars
-                         (if (consp element)
-                             (car element)
-                           element))) varlist)
+            (add-to-list
+             'el-spec:vars (if (consp element) (car element) element)))
+          varlist)
   `(let ,varlist
      ,@body
      )
