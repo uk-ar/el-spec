@@ -24,6 +24,7 @@
 ;;-------------------------------------------------------------------
 
 (require 'ert)
+(require 'cl)
 
 (defmacro el-spec:around (&rest body)
   (push
@@ -51,8 +52,7 @@
   `(el-spec:around
     (funcall el-spec:example)
     ,@body
-    )
-  )
+    ))
 
 (defun el-spec:compose (f g)
   `(lambda () (funcall (function ,g) (function ,f))))
@@ -80,16 +80,16 @@
                           (apply 'concat (reverse el-spec:descriptions)))))
         (when (ert-test-boundp test-symbol)
           (warn "test function \"%s\" already exist" test-symbol))
-      `(el-spec:let ,vars
-         (lexical-let ,(mapcar (lambda (var)
-                                 `(,var ,var)) el-spec:vars)
-           (ert-deftest ,test-symbol ()
-             (funcall ,(reduce #'el-spec:compose
-                               el-spec:full-context))
+        `(el-spec:let ,vars
+           (lexical-let ,(mapcar (lambda (var)
+                                   `(,var ,var)) el-spec:vars)
+             (ert-deftest ,test-symbol ()
+               (funcall ,(reduce #'el-spec:compose
+                                 el-spec:full-context))
+               )
              )
            )
-         )
-      ))))
+        ))))
 
 (defconst el-spec:separator "\n")
 
@@ -124,7 +124,6 @@
   (makunbound 'el-spec:full-context)
   (makunbound 'el-spec:descriptions)
   (makunbound 'el-spec:vars)
-
   `(let ((el-spec:full-context nil)
          (el-spec:descriptions nil)
          (el-spec:vars nil))
@@ -212,14 +211,14 @@
 
 (defmacro include-context (desc)
   `(let ((context
-            (intern (format "el-spec:context-%s" ,desc))))
-    (setq el-spec:full-context (append (car (symbol-value context))
-                                       el-spec:full-context))
+             (intern (format "el-spec:context-%s" ,desc))))
+     (setq el-spec:full-context (append (car (symbol-value context))
+                                        el-spec:full-context))
      ;; (setq el-spec:descriptions (append (nth 1 (symbol-value context))
      ;;                                    el-spec:descriptions))
-    (setq el-spec:vars (append (nth 2 (symbol-value context))
-                                       el-spec:vars))
-    ))
+     (setq el-spec:vars (append (nth 2 (symbol-value context))
+                                el-spec:vars))
+     ))
 
 (defmacro shared-examples (arglist &rest body)
   (declare (indent 1))
@@ -235,16 +234,16 @@
              ;; (let ((el-spec:full-context nil)
              ;;      (el-spec:descriptions nil)
              ;;      (el-spec:vars nil))
-              (context ,arglist
-                ,@body
-                )));; )
+             (context ,arglist
+               ,@body
+               )));; )
     ))
 
 (defmacro include-examples (desc)
   (let ((context
-             (intern (format "el-spec:examples-%s" desc))))
-     `(funcall ,context)
-     ))
+            (intern (format "el-spec:examples-%s" desc))))
+    `(funcall ,context)
+    ))
 
 ;; (setq cmd "=")を忘れたとき
 
