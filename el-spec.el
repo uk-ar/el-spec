@@ -25,20 +25,20 @@
 
 (require 'ert)
 
-(defmacro around (&rest body)
+(defmacro el-spec:around (&rest body)
   (push
    `(lambda (el-spec:example)
       ,@body)
    el-spec:full-context)
   nil)
 
-(defmacro before (&rest body)
-  `(around
+(defmacro el-spec:before (&rest body)
+  `(el-spec:around
     ,@body
     (funcall el-spec:example)
     ))
 
-(defmacro after (&rest body)
+(defmacro el-spec:after (&rest body)
   ;; don't use around macro because of `el-spec:example' variable binding
   ;; use `el-spec:example' for test ability
   ;; (let ((example-sym (make-symbol "example")))
@@ -48,7 +48,7 @@
   ;;       ,@body)
   ;;    el-spec:full-context))
   ;; nil)
-  `(around
+  `(el-spec:around
     (funcall el-spec:example)
     ,@body
     )
@@ -57,7 +57,7 @@
 (defun el-spec:compose (f g)
   `(lambda () (funcall (function ,g) (function ,f))))
 
-(defmacro it (arglist &rest body)
+(defmacro el-spec:it (arglist &rest body)
   (declare (indent 1))
   (cond
    ((stringp arglist)
@@ -93,7 +93,7 @@
 
 (defconst el-spec:separator "\n")
 
-(defmacro context (arglist &rest body)
+(defmacro el-spec:context (arglist &rest body)
   (declare (indent 1))
   ;; typecase
   (cond
@@ -128,10 +128,25 @@
   `(let ((el-spec:full-context nil)
          (el-spec:descriptions nil)
          (el-spec:vars nil))
-     (context ,arglist
-       ,@body
-       )
-     ))
+     ;; macrolet
+     (letf (((symbol-function 'around) (symbol-function 'el-spec:around))
+            ;; ((symbol-function 'context) (symbol-function 'el-spec:context))
+            ((symbol-function 'after) (symbol-function 'el-spec:after))
+            ((symbol-function 'before) (symbol-function 'el-spec:before))
+            ((symbol-function 'it) (symbol-function 'el-spec:it))
+            ((symbol-function 'context) (symbol-function 'el-spec:context))
+            )
+       (el-spec:context ,arglist
+         ,@body
+         ))
+     )
+  )
+
+;; (put 'around 'lisp-indent-function 0)
+;; (put 'after 'lisp-indent-function 0)
+(put 'it 'lisp-indent-function 1)
+;; (put 'before 'lisp-indent-function 0)
+(put 'context 'lisp-indent-function 1)
 
 (defmacro el-spec:let (varlist &rest body)
   (declare (indent 1))
