@@ -102,120 +102,123 @@
   )
 
 (ert-deftest el-spec:test-nested-before ()
-  (should (equal (ert-test-boundp (intern "nested before\ncontext1\nit1")) nil))
-  (should (equal (ert-test-boundp (intern "nested before\ncontext2\nit2")) nil))
-  (describe "nested before"
-    (before
-     (message "before0"))
-    (context "context1"
+  (let ((ex1 (intern "nested before\ncontext1\nit1"))
+        (ex2 (intern "nested before\ncontext2\nit2"))
+        )
+    (describe "nested before"
       (before
-       (message "before1"))
-      (it "it1"
-        (message "example1")))
-    (context "context2"
-      (before
-       (message "before2"))
-      (it "it2"
-        (message "example2")
-        (should nil))))
+       (message "before0"))
+      (context "context1"
+        (before
+         (message "before1"))
+        (it "it1"
+          (message "example1")))
+      (context "context2"
+        (before
+         (message "before2"))
+        (it "it2"
+          (message "example2")
+          (should nil))))
 
-  (should (equal (ert-test-boundp (intern "nested before\ncontext1\nit1")) t))
-  (let ((result (ert-run-test
-                 (ert-get-test (intern "nested before\ncontext1\nit1")))))
-    (should (ert-test-passed-p result))
-    (should (equal (ert-test-result-messages result)
-                   "\
+    (let ((result (ert-run-test
+                   (ert-get-test ex1))))
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
 before0
 before1
 example1
 ")))
 
-  (should (equal (ert-test-boundp (intern "nested before\ncontext2\nit2")) t))
-  (let ((result (ert-run-test
-                 (ert-get-test (intern "nested before\ncontext2\nit2")))))
-    (should (ert-test-failed-p result))
-    (should (equal (ert-test-result-messages result)
-                   "\
+    (let ((result (ert-run-test
+                   (ert-get-test ex2))))
+      (should (ert-test-failed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
 before0
 before2
 example2
 ")))
-  )
+    ))
 
 (ert-deftest el-spec:test-nested-after ()
-  (should (equal (ert-test-boundp (intern "nested after\ncontext1\nit1")) nil))
-  (should (equal (ert-test-boundp (intern "nested after\ncontext2\nit2")) nil))
-  (describe "nested after"
-    (after
-     (message "after0"))
-    (context "context1"
+  (let ((ex1 (intern "nested after\ncontext1\nit1"))
+        (ex2 (intern "nested after\ncontext2\nit2"))
+        )
+    (should (equal (ert-test-boundp ex1) nil))
+    (should (equal (ert-test-boundp ex2) nil))
+    (describe "nested after"
       (after
-       (message "after1"))
-      (it "it1"
-        (message "example1")))
-    (context "context2"
-      (after
-       (message "after2"))
-      (it "it2"
-        (message "example2")
-        )))
+       (message "after0"))
+      (context "context1"
+        (after
+         (message "after1"))
+        (it "it1"
+          (message "example1")))
+      (context "context2"
+        (after
+         (message "after2"))
+        (it "it2"
+          (message "example2")
+          )))
 
-  (should (equal (ert-test-boundp (intern "nested after\ncontext1\nit1")) t))
-  (let ((result (ert-run-test
-                 (ert-get-test (intern "nested after\ncontext1\nit1")))))
-    (should (ert-test-passed-p result))
-    (should (equal (ert-test-result-messages result)
-                   "\
+    (let ((result (ert-run-test
+                   (ert-get-test ex1))))
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
 example1
 after1
 after0
 ")))
 
-  (should (equal (ert-test-boundp (intern "nested after\ncontext2\nit2")) t))
-  (let ((result (ert-run-test
-                 (ert-get-test (intern "nested after\ncontext2\nit2")))))
-    (should (ert-test-passed-p result))
-    (should (equal (ert-test-result-messages result)
-                   "\
+    (let ((result (ert-run-test
+                   (ert-get-test ex2))))
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
 example2
 after2
 after0
 ")))
-  )
+    ))
 
 (ert-deftest el-spec:test-nested-around ()
-  (should (equal (ert-test-boundp (intern "nested around\ncontext1\nit1")) nil))
-  (should (equal (ert-test-boundp (intern "nested around\ncontext2\nit2")) nil))
-  (describe "nested around"
-    (around
-     (message "around01")
-     (funcall el-spec:example)
-     (message "around02")
-     )
-    (context "context1"
-      (around
-       (message "around11")
-       (funcall el-spec:example)
-       (message "around12")
-       )
-      (it "it1"
-        (message "example1")))
-    (context "context2"
-      (around
-       (message "around21")
-       (funcall el-spec:example)
-       (message "around22")
-       )
-      (it "it2"
-        (message "example2")
-        )))
+  (let ((ex1 (intern "nested around\ncontext1\nit1"))
+        (ex2 (intern "nested around\ncontext2\nit2"))
+        )
+    (should (equal (ert-test-boundp ex1) nil))
+    (should (equal (ert-test-boundp ex2) nil))
 
-  (should (equal (ert-test-boundp (intern "nested around\ncontext1\nit1")) t))
-  (let ((result (ert-run-test
-                 (ert-get-test (intern "nested around\ncontext1\nit1")))))
-    (should (ert-test-passed-p result))
-    (should (equal (ert-test-result-messages result)
-                   "\
+    (describe "nested around"
+      (around
+       (message "around01")
+       (funcall el-spec:example)
+       (message "around02")
+       )
+      (context "context1"
+        (around
+         (message "around11")
+         (funcall el-spec:example)
+         (message "around12")
+         )
+        (it "it1"
+          (message "example1")))
+      (context "context2"
+        (around
+         (message "around21")
+         (funcall el-spec:example)
+         (message "around22")
+         )
+        (it "it2"
+          (message "example2")
+          )))
+
+    (let ((result (ert-run-test
+                   (ert-get-test ex1))))
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
 around01
 around11
 example1
@@ -223,19 +226,18 @@ around12
 around02
 ")))
 
-  (should (equal (ert-test-boundp (intern "nested around\ncontext2\nit2")) t))
-  (let ((result (ert-run-test
-                 (ert-get-test (intern "nested around\ncontext2\nit2")))))
-    (should (ert-test-passed-p result))
-    (should (equal (ert-test-result-messages result)
-                   "\
+    (let ((result (ert-run-test
+                   (ert-get-test ex2))))
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
 around01
 around21
 example2
 around22
 around02
 ")))
-  )
+    ))
 
 (ert-deftest el-spec:test-nested-mix ()
   (let ((ex1 (intern "nested mix\ncontext1\nit1"))
@@ -243,38 +245,38 @@ around02
         )
     (should (equal (ert-test-boundp ex1) nil))
     (should (equal (ert-test-boundp ex2) nil))
-  (describe "nested mix"
-    (around
-     (message "around1")
-     (funcall el-spec:example)
-     (message "around2")
-     )
-    (context "context1"
-      (before (message "before"))
-      (it "it1"
-        (message "example1")))
-    (context "context2"
-      (after (message "after"))
-      (it "it2"
-        (message "example2")
-        )))
+    (describe "nested mix"
+      (around
+       (message "around1")
+       (funcall el-spec:example)
+       (message "around2")
+       )
+      (context "context1"
+        (before (message "before"))
+        (it "it1"
+          (message "example1")))
+      (context "context2"
+        (after (message "after"))
+        (it "it2"
+          (message "example2")
+          )))
 
-  (let ((result (ert-run-test
+    (let ((result (ert-run-test
                    (ert-get-test ex1))))
-    (should (ert-test-passed-p result))
-    (should (equal (ert-test-result-messages result)
-                   "\
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
 around1
 before
 example1
 around2
 ")))
 
-  (let ((result (ert-run-test
+    (let ((result (ert-run-test
                    (ert-get-test ex2))))
-    (should (ert-test-passed-p result))
-    (should (equal (ert-test-result-messages result)
-                   "\
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
 around1
 example2
 after
@@ -288,62 +290,62 @@ around2
         )
     (should (equal (ert-test-boundp ex1) nil))
     (should (equal (ert-test-boundp ex2) nil))
-  (describe "shared context"
-    (shared-context "context0"
-      (before
-       (message "before01")
-       )
-      (after
-       (message "after01")
-       )
-      )
+    (describe "shared context"
+      (shared-context "context0"
+        (before
+         (message "before01")
+         )
+        (after
+         (message "after01")
+         )
+        )
 
-    (context "context1"
-      (include-context "context0")
+      (context "context1"
+        (include-context "context0")
 
-      (around
-       (message "around11")
-       (funcall el-spec:example)
-       (message "around12")
-       )
-      (it "it1"
-        (message "example1")))
+        (around
+         (message "around11")
+         (funcall el-spec:example)
+         (message "around12")
+         )
+        (it "it1"
+          (message "example1")))
 
-    (context "context2"
-      (include-context "context0")
+      (context "context2"
+        (include-context "context0")
 
-      (around
-       (message "around21")
-       (funcall el-spec:example)
-       (message "around22")
-       )
-      (it "it2"
-        (message "example2")
-        )))
+        (around
+         (message "around21")
+         (funcall el-spec:example)
+         (message "around22")
+         )
+        (it "it2"
+          (message "example2")
+          )))
 
-  (let ((result (ert-run-test
-                 (ert-get-test ex1))))
-    (should (ert-test-passed-p result))
-    (should (equal (ert-test-result-messages result)
-                   "\
+    (let ((result (ert-run-test
+                   (ert-get-test ex1))))
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
 before01
 around11
 example1
 around12
 after01
 ")))
-  (let ((result (ert-run-test
-                 (ert-get-test ex2))))
-    (should (ert-test-passed-p result))
-    (should (equal (ert-test-result-messages result)
-                   "\
+    (let ((result (ert-run-test
+                   (ert-get-test ex2))))
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
 before01
 around21
 example2
 around22
 after01
 ")))
-  ))
+    ))
 
 (ert-deftest el-spec:test-nested-shared-context ()
   (let ((ex1 (intern "nested shared context\ncontext1\nit1"))
@@ -353,53 +355,53 @@ after01
     (should (equal (ert-test-boundp ex2) nil))
 
     (describe "nested shared context"
-    (shared-context "context00"
-      (before
+      (shared-context "context00"
+        (before
          (message "before001"))
-      (after
+        (after
          (message "after001")))
-    (shared-context "context0"
-      (before
+      (shared-context "context0"
+        (before
          (message "before01"))
-      (after
+        (after
          (message "after01"))
 
-      (include-context "context00")
+        (include-context "context00")
 
-      (before
+        (before
          (message "before02"))
-      (after
+        (after
          (message "after02"))
-      )
+        )
 
-    (context "context1"
-      (include-context "context0")
+      (context "context1"
+        (include-context "context0")
 
-      (around
-       (message "around11")
-       (funcall el-spec:example)
-       (message "around12")
-       )
-      (it "it1"
-        (message "example1")))
+        (around
+         (message "around11")
+         (funcall el-spec:example)
+         (message "around12")
+         )
+        (it "it1"
+          (message "example1")))
 
-    (context "context2"
-      (include-context "context0")
+      (context "context2"
+        (include-context "context0")
 
-      (around
-       (message "around21")
-       (funcall el-spec:example)
-       (message "around22")
-       )
-      (it "it2"
-        (message "example2")
-        )))
+        (around
+         (message "around21")
+         (funcall el-spec:example)
+         (message "around22")
+         )
+        (it "it2"
+          (message "example2")
+          )))
 
-  (let ((result (ert-run-test
+    (let ((result (ert-run-test
                    (ert-get-test ex1))))
-    (should (ert-test-passed-p result))
-    (should (equal (ert-test-result-messages result)
-                   "\
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
 before01
 before001
 before02
@@ -410,11 +412,11 @@ after02
 after001
 after01
 ")))
-  (let ((result (ert-run-test
+    (let ((result (ert-run-test
                    (ert-get-test ex2))))
-    (should (ert-test-passed-p result))
-    (should (equal (ert-test-result-messages result)
-                   "\
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
 before01
 before001
 before02
