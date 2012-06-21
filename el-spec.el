@@ -198,6 +198,33 @@
                                        el-spec:vars))
     ))
 
+(defmacro shared-examples (arglist &rest body)
+  (declare (indent 1))
+  (cond
+   ((stringp arglist)
+    (setq arglist (list arglist)))
+   ((not (consp arglist))
+    (error "%S is not string or list" arglist)
+    ))
+  (destructuring-bind (desc &key vars) arglist
+    `(setq ,(intern (format "el-spec:examples-%s" desc))
+           (lambda ()
+             ;; (let ((el-spec:full-context nil)
+             ;;      (el-spec:descriptions nil)
+             ;;      (el-spec:vars nil))
+              (context ,arglist
+                ,@body
+                )));; )
+    ))
+
+(defmacro include-examples (desc)
+  (let ((context
+             (intern (format "el-spec:examples-%s" desc))))
+     `(funcall ,context)
+     ))
+
+;; (setq cmd "=")を忘れたとき
+
 (defun my-ert ()
   (interactive)
   (ert-delete-all-tests)

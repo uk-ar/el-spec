@@ -430,4 +430,83 @@ after001
 after01
 ")))
     ))
+
+(ert-deftest el-spec:test-shared-examples ()
+  (let ((ex1 (intern "shared examples\ncontext1\nexamples0\nit1"))
+        (ex2 (intern "shared examples\ncontext1\nexamples0\nit2"))
+        (ex3 (intern "shared examples\ncontext2\nexamples0\nit1"))
+        (ex4 (intern "shared examples\ncontext2\nexamples0\nit2"))
+        )
+    (should (equal (ert-test-boundp ex1) nil))
+    (should (equal (ert-test-boundp ex2) nil))
+    (should (equal (ert-test-boundp ex3) nil))
+    (should (equal (ert-test-boundp ex4) nil))
+
+    (describe "shared examples"
+      (shared-examples "examples0"
+        (it "it1"
+          (message "example1"))
+        (it "it2"
+          (message "example2"))
+        )
+
+      (context "context1"
+        (around
+         (message "around11")
+         (funcall el-spec:example)
+         (message "around12")
+         )
+        (include-examples "examples0"))
+
+      (context "context2"
+        (around
+         (message "around21")
+         (funcall el-spec:example)
+         (message "around22")
+         )
+        (include-examples "examples0")
+        ))
+
+    (let ((result (ert-run-test
+                   (ert-get-test
+                    ex1))))
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
+around11
+example1
+around12
+")))
+    (let ((result (ert-run-test
+                   (ert-get-test
+                    ex2))))
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
+around11
+example2
+around12
+")))
+    (let ((result (ert-run-test
+                   (ert-get-test
+                    ex3))))
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
+around21
+example1
+around22
+")))
+    (let ((result (ert-run-test
+                   (ert-get-test
+                    ex4))))
+      (should (ert-test-passed-p result))
+      (should (equal (ert-test-result-messages result)
+                     "\
+around21
+example2
+around22
+")))
+    )
   )
+
