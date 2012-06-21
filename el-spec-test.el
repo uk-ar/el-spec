@@ -88,10 +88,10 @@
     (should (equal el-spec:descriptions '("\n" "describe")))
 
     (around
-     (message "around1")
-     (funcall el-spec:example)
-     (message "around2")
-     )
+      (message "around1")
+      (funcall el-spec:example)
+      (message "around2")
+      )
     (should (equal el-spec:full-context
                    '((lambda (el-spec:example)
                        (message "around1")
@@ -107,15 +107,15 @@
         )
     (describe "nested before"
       (before
-       (message "before0"))
+        (message "before0"))
       (context "context1"
         (before
-         (message "before1"))
+          (message "before1"))
         (it "it1"
           (message "example1")))
       (context "context2"
         (before
-         (message "before2"))
+          (message "before2"))
         (it "it2"
           (message "example2")
           (should nil))))
@@ -149,15 +149,15 @@ example2
     (should (equal (ert-test-boundp ex2) nil))
     (describe "nested after"
       (after
-       (message "after0"))
+        (message "after0"))
       (context "context1"
         (after
-         (message "after1"))
+          (message "after1"))
         (it "it1"
           (message "example1")))
       (context "context2"
         (after
-         (message "after2"))
+          (message "after2"))
         (it "it2"
           (message "example2")
           )))
@@ -192,24 +192,24 @@ after0
 
     (describe "nested around"
       (around
-       (message "around01")
-       (funcall el-spec:example)
-       (message "around02")
-       )
+        (message "around01")
+        (funcall el-spec:example)
+        (message "around02")
+        )
       (context "context1"
         (around
-         (message "around11")
-         (funcall el-spec:example)
-         (message "around12")
-         )
+          (message "around11")
+          (funcall el-spec:example)
+          (message "around12")
+          )
         (it "it1"
           (message "example1")))
       (context "context2"
         (around
-         (message "around21")
-         (funcall el-spec:example)
-         (message "around22")
-         )
+          (message "around21")
+          (funcall el-spec:example)
+          (message "around22")
+          )
         (it "it2"
           (message "example2")
           )))
@@ -247,10 +247,10 @@ around02
     (should (equal (ert-test-boundp ex2) nil))
     (describe "nested mix"
       (around
-       (message "around1")
-       (funcall el-spec:example)
-       (message "around2")
-       )
+        (message "around1")
+        (funcall el-spec:example)
+        (message "around2")
+        )
       (context "context1"
         (before (message "before"))
         (it "it1"
@@ -293,21 +293,21 @@ around2
     (describe "shared context"
       (shared-context "context0"
         (before
-         (message "before01")
-         )
+          (message "before01")
+          )
         (after
-         (message "after01")
-         )
+          (message "after01")
+          )
         )
 
       (context "context1"
         (include-context "context0")
 
         (around
-         (message "around11")
-         (funcall el-spec:example)
-         (message "around12")
-         )
+          (message "around11")
+          (funcall el-spec:example)
+          (message "around12")
+          )
         (it "it1"
           (message "example1")))
 
@@ -315,10 +315,10 @@ around2
         (include-context "context0")
 
         (around
-         (message "around21")
-         (funcall el-spec:example)
-         (message "around22")
-         )
+          (message "around21")
+          (funcall el-spec:example)
+          (message "around22")
+          )
         (it "it2"
           (message "example2")
           )))
@@ -357,31 +357,31 @@ after01
     (describe "nested shared context"
       (shared-context "context00"
         (before
-         (message "before001"))
+          (message "before001"))
         (after
-         (message "after001")))
+          (message "after001")))
       (shared-context "context0"
         (before
-         (message "before01"))
+          (message "before01"))
         (after
-         (message "after01"))
+          (message "after01"))
 
         (include-context "context00")
 
         (before
-         (message "before02"))
+          (message "before02"))
         (after
-         (message "after02"))
+          (message "after02"))
         )
 
       (context "context1"
         (include-context "context0")
 
         (around
-         (message "around11")
-         (funcall el-spec:example)
-         (message "around12")
-         )
+          (message "around11")
+          (funcall el-spec:example)
+          (message "around12")
+          )
         (it "it1"
           (message "example1")))
 
@@ -389,10 +389,10 @@ after01
         (include-context "context0")
 
         (around
-         (message "around21")
-         (funcall el-spec:example)
-         (message "around22")
-         )
+          (message "around21")
+          (funcall el-spec:example)
+          (message "around22")
+          )
         (it "it2"
           (message "example2")
           )))
@@ -450,18 +450,18 @@ after01
 
       (context "context1"
         (around
-         (message "around11")
-         (funcall el-spec:example)
-         (message "around12")
-         )
+          (message "around11")
+          (funcall el-spec:example)
+          (message "around12")
+          )
         (include-examples "examples0"))
 
       (context "context2"
         (around
-         (message "around21")
-         (funcall el-spec:example)
-         (message "around22")
-         )
+          (message "around21")
+          (funcall el-spec:example)
+          (message "around22")
+          )
         (include-examples "examples0")
         ))
 
