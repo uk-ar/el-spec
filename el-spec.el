@@ -199,7 +199,7 @@
   `(let ((el-spec:full-context nil)
          (el-spec:descriptions nil)
          (el-spec:vars nil))
-     (context ,arglist
+     (el-spec:context ,arglist
        ,@body
        ;; (message "des:%S" (car (last el-spec:descriptions)))
        (set (intern (format "el-spec:context-%s"
@@ -210,14 +210,16 @@
        )))
 
 (defmacro include-context (desc)
-  `(let ((context
-             (intern (format "el-spec:context-%s" ,desc))))
-     (setq el-spec:full-context (append (car (symbol-value context))
+  ;; macro for set el-spec:full-context
+  (let ((context (intern (format "el-spec:context-%s" desc))))
+    `(progn
+          (setq el-spec:full-context (append (car ,context)
                                         el-spec:full-context))
      ;; (setq el-spec:descriptions (append (nth 1 (symbol-value context))
      ;;                                    el-spec:descriptions))
-     (setq el-spec:vars (append (nth 2 (symbol-value context))
+          (setq el-spec:vars (append (nth 2 ,context)
                                 el-spec:vars))
+       )
      ))
 
 (defmacro shared-examples (arglist &rest body)
@@ -234,7 +236,7 @@
              ;; (let ((el-spec:full-context nil)
              ;;      (el-spec:descriptions nil)
              ;;      (el-spec:vars nil))
-             (context ,arglist
+             (el-spec:context ,arglist
                ,@body
                )));; )
     ))
