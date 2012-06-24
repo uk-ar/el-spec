@@ -142,11 +142,11 @@
      )
   )
 
-;; (put 'around 'lisp-indent-function 0)
-;; (put 'after 'lisp-indent-function 0)
 (put 'it 'lisp-indent-function 1)
-;; (put 'before 'lisp-indent-function 0)
 (put 'context 'lisp-indent-function 1)
+(put 'before 'lisp-indent-function 0)
+(put 'around 'lisp-indent-function 0)
+(put 'after 'lisp-indent-function 0)
 
 (defmacro el-spec:let (varlist &rest body)
   (declare (indent 1))
