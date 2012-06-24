@@ -76,6 +76,7 @@
        `(lambda () ,@body)
        el-spec:full-context)
       (push (or desc (list (format "%S" body))) el-spec:descriptions)
+      (push (if vars (format "%S" vars)) el-spec:descriptions)
       (let ((test-symbol (intern
                           (apply 'concat (reverse el-spec:descriptions)))))
         (when (ert-test-boundp test-symbol)
