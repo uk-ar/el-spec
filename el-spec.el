@@ -211,6 +211,15 @@
     (setq el-spec:selection 'all)
     (message "selection:all"))
    (t (warn "el-spec:selection is invalid"))))
+
+(defadvice ert (around el-spec:ert-advice activate)
+  (if (and (fboundp 'popwin:popup-buffer-tail)
+           (not (interactive-p)))
+      (let ((special-display-function 'popwin:popup-buffer-tail))
+        ad-do-it
+        (popwin:display-buffer-tail "*ert*"))
+    ad-do-it))
+
 (defadvice eval-defun (around el-spec:eval-defun-advice activate)
   (if (not (and (interactive-p)
                 (el-sepc:current-form-is-describe)))
