@@ -130,11 +130,18 @@
          (el-spec:vars nil))
      ;; macrolet
      (letf (((symbol-function 'around) (symbol-function 'el-spec:around))
-            ;; ((symbol-function 'context) (symbol-function 'el-spec:context))
             ((symbol-function 'after) (symbol-function 'el-spec:after))
             ((symbol-function 'before) (symbol-function 'el-spec:before))
             ((symbol-function 'it) (symbol-function 'el-spec:it))
             ((symbol-function 'context) (symbol-function 'el-spec:context))
+            ((symbol-function 'shared-context)
+             (symbol-function 'el-spec:shared-context))
+            ((symbol-function 'include-context)
+             (symbol-function 'el-spec:include-context))
+            ((symbol-function 'shared-examples)
+             (symbol-function 'el-spec:shared-examples))
+            ((symbol-function 'include-examples)
+             (symbol-function 'el-spec:include-examples))
             )
        (el-spec:context ,arglist
          ,@body
@@ -147,6 +154,8 @@
 (put 'before 'lisp-indent-function 0)
 (put 'around 'lisp-indent-function 0)
 (put 'after 'lisp-indent-function 0)
+(put 'shared-context 'lisp-indent-function 1)
+(put 'shared-examples 'lisp-indent-function 1)
 
 (defmacro el-spec:let (varlist &rest body)
   (declare (indent 1))
@@ -210,7 +219,7 @@
                   el-spec:vars))
        )))
 
-(defmacro include-context (desc)
+(defmacro el-spec:include-context (desc)
   ;; macro for set el-spec:full-context
   (let ((context (intern (format "el-spec:context-%s" desc))))
     `(progn
@@ -223,7 +232,7 @@
        )
      ))
 
-(defmacro shared-examples (arglist &rest body)
+(defmacro el-spec:shared-examples (arglist &rest body)
   (declare (indent 1))
   (cond
    ((stringp arglist)
@@ -242,7 +251,7 @@
                )));; )
     ))
 
-(defmacro include-examples (desc)
+(defmacro el-spec:include-examples (desc)
   (let ((context
             (intern (format "el-spec:examples-%s" desc))))
     `(funcall ,context)
@@ -250,7 +259,7 @@
 
 ;; (setq cmd "=")を忘れたとき
 
-(defun my-ert ()
+(defun el-spec:eval-buffer ()
   (interactive)
   (ert-delete-all-tests)
   (eval-buffer)
