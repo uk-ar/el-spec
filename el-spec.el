@@ -196,16 +196,97 @@
 (substitute-key-definition 'expectations-eval-defun 'eval-defun emacs-lisp-mode-map)
 (substitute-key-definition 'expectations-eval-defun 'eval-defun lisp-interaction-mode-map)
 
-(defadvice eval-defun (around el-spec:eval-defun activate)
+(defvar el-spec:selection 'all
+  ;; all or context
+  )
+
+(defun el-spec:toggle-selection ()
+  (interactive)
+  (cond
+   ((eq el-spec:selection 'all)
+    (setq el-spec:selection 'context)
+    (message "selection:context")
+    )
+   ((eq el-spec:selection 'context)
+    (setq el-spec:selection 'all)
+    (message "selection:all"))
+   (t (warn "el-spec:selection is invalid"))))
+(defadvice eval-defun (around el-spec:eval-defun-advice activate)
   (if (not (and (interactive-p)
                 (el-sepc:current-form-is-describe)))
       ad-do-it
     (ert-delete-all-tests)
     ad-do-it
-    (ert t)
+    (cond
+     ((eq el-spec:selection 'all)
+      (ert t))
+     ((eq el-spec:selection 'context)
+      (el-spec:execute-context))
+     (t (warn "el-spec:selection is invalid")))
     ))
 
-(defmacro shared-context (arglist &rest body)
+(defun el-spec:eval-and-execute-all ()
+  (interactive)
+  (let ((el-spec:selection 'all))
+    (call-interactively 'eval-defun)
+    ))
+
+(defun el-spec:eval-and-execute-context ()
+  (interactive)
+  (let ((el-spec:selection 'context))
+    (call-interactively 'eval-defun)
+    ))
+
+(defun el-spec:execute-context ()
+  (save-excursion
+    (if (not (save-excursion
+               (backward-sexp)
+               (looking-at "(context\\|(describe")))
+        (el-spec:execute-context-1)
+      (backward-sexp)
+      (down-list)
+      (el-spec:execute-context-1)
+      )))
+
+(defun el-spec:backward-up-list ()
+  (condition-case err
+      (progn
+        (if (or (nth 3 (syntax-ppss));string
+                (nth 4 (syntax-ppss)));comment
+            (goto-char (nth 8 (syntax-ppss))))
+        (backward-up-list))
+    (scan-error
+     (message "top level")
+     ;;top level
+     )))
+
+(defun el-spec:execute-context-1 ()
+  (save-excursion
+    (let ((start-point
+           (save-excursion (beginning-of-defun) (point)))
+          (test-name nil)
+          ;; for backward-up-list
+          ;;(parse-sexp-ignore-comments t)
+          )
+      (while (not (eq (point) start-point))
+        (backward-up-list)
+        (when
+            (looking-at "(context\\|(describe")
+          (save-excursion
+            (forward-word)
+            (forward-word)
+            (setq test-name
+                  (concat
+                   (car (split-string-and-unquote (thing-at-point 'string) "\""))
+                   "\n" test-name))
+            )
+          )
+        )
+      (ert test-name)
+      )))
+
+
+(defmacro el-spec:shared-context (arglist &rest body)
   (declare (indent 1))
   `(let ((el-spec:full-context nil)
          (el-spec:descriptions nil)
