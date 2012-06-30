@@ -267,5 +267,12 @@
   (ert t)
   )
 
+;;print test name
+(defun ert-insert-test-name-button (test-name)
+  "Insert a button that links to TEST-NAME."
+  (insert-text-button (format "%s" test-name)
+                      :type 'ert--test-name-button
+                      'ert-test-name test-name))
+
 (provide 'el-spec)
 ;;; el-spec.el ends here
