@@ -344,11 +344,20 @@
                )));; )
     ))
 
-(defmacro el-spec:include-examples (desc)
-  (let ((context
-            (intern (format "el-spec:examples-%s" desc))))
-    `(funcall ,context)
+(defmacro el-spec:include-examples (arglist)
+  (cond
+   ((stringp arglist)
+    (setq arglist (list arglist)))
+   ((not (consp arglist))
+    (error "%S is not string or list" arglist)
     ))
+  (destructuring-bind (desc &key vars) arglist
+    (let ((context
+              (intern (format "el-spec:examples-%s" desc))))
+      `(el-spec:let ,vars
+         (funcall ,context)
+         )
+      )))
 
 ;; (setq cmd "=")を忘れたとき
 
