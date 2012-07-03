@@ -75,8 +75,10 @@
       (push
        `(lambda () ,@body)
        el-spec:full-context)
-      (push (if vars (format "%S" vars)) el-spec:descriptions)
-      (push el-spec:separator el-spec:descriptions)
+      (when vars
+        (push (format "%S" vars) el-spec:descriptions)
+        (push el-spec:separator el-spec:descriptions)
+        )
       (push (or desc (list (format "%S" body))) el-spec:descriptions)
       (let ((test-symbol (intern
                           (apply 'concat (reverse el-spec:descriptions)))))

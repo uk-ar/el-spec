@@ -23,6 +23,7 @@
 ;;
 ;;-------------------------------------------------------------------
 
+(require 'el-spec)
  ;;; self-test
 (ert-deftest el-spec:test-describe-initial-value ()
   (should-not (fboundp 'around))
@@ -46,15 +47,22 @@
     (it "it" (message "example"))
     (should (eq el-spec:full-context nil))
     (should (equal el-spec:descriptions '("\n" "describe")))
-    (should (equal (ert-test-boundp (intern "describe\nit")) t))
+    ;; (should (equal (ert-test-boundp (intern "describe\nit")) t))
+    )
+  (let ((result (ert-run-test
+                 (ert-get-test (intern "describe\nit")))))
+    (should (ert-test-passed-p result))
+    (should (equal (ert-test-result-messages result)
+                   "example\n")))
+  )
 
-    (let ((result (ert-run-test
-                   (ert-get-test (intern "describe\nit")))))
-      (should (ert-test-passed-p result))
-      (should (equal (ert-test-result-messages result)
-                     "example\n")))
+(ert-deftest el-spec:test-duprecate-test ()
+  (describe "describe"
+    (it "foo")
+    ;; (it "foo")
     )
   )
+;; (message "%S" (ert "el-spec:test-duprecate-test"))
 
 (ert-deftest el-spec:test-describe-before ()
   (describe "describe"
