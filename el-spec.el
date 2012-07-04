@@ -263,7 +263,7 @@
            (not (interactive-p)))
       (let ((special-display-function 'popwin:popup-buffer-tail))
         ad-do-it
-        (popwin:display-buffer-tail "*ert*"))
+        (popwin:popup-buffer-tail "*ert*"))
     ad-do-it))
 
 (defadvice eval-defun (around el-spec:eval-defun-advice activate)
