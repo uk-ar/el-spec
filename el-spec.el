@@ -23,6 +23,68 @@
 ;;
 ;;-------------------------------------------------------------------
 
+;; Author: Yuuki Arisawa <yuuki.ari@gmail.com>
+;; URL: https://github.com/uk-ar/el-spec
+;; Created: 4 July 2012
+;; Version: 0.1
+;; Keywords: test
+
+;;; Commentary:
+
+;; ########   Compatibility   ########################################
+;;
+;; Works with Emacs-23.2.1, 23.1.1
+
+;; ########   Quick start   ########################################
+;;
+;; Add to your ~/.emacs
+;;
+;; (require 'el-spec)
+;;
+;; and write some test, for example
+;;
+;; (dont-compile
+;;   (when (fboundp 'describe)
+;;     (describe "description"
+;;       (before
+;;         (message "before common"))
+;;       (after
+;;         (message "after common\n"))
+;;       (context "when 1"
+;;         (before
+;;           (message "before 1"))
+;;         (after
+;;           (message "after 1"))
+;;         (it "test 1"
+;;           (message "test 1")))
+;;       (context "when 2"
+;;         (before
+;;           (message "before 2"))
+;;         (after
+;;           (message "after 2"))
+;;         (it "test 2"
+;;           (message "test 2")))
+;;       )))
+;;
+;; output is like this.
+;;
+;; before common
+;; before 1
+;; test 1
+;; after 1
+;; after common
+;;
+;; before common
+;; before 2
+;; test 2
+;; after 2
+;; after common
+;;
+;;; History:
+
+;; Revision 0.1 2012/07/05 00:55:38
+;; * First release
+
 (require 'ert)
 (require 'cl)
 
@@ -171,24 +233,6 @@
      )
   )
 
-;;; useage
-;;
-;; (describe "a"
-;;   (before
-;;    (message "a0"))
-;;   (context "b"
-;;     (before
-;;      (message "a1"))
-;;     (it "ex1"
-;;         (message "ex1")
-;;         (should nil)))
-;;   (context "c"
-;;     (before
-;;      (message "a2"))
-;;     (it "ex2"
-;;         (message "ex2"))
-;;     ))
-
 ;; copy from el-expectations
 (defun el-sepc:current-form-is-describe ()
   (save-excursion
@@ -280,7 +324,7 @@
           ;;(parse-sexp-ignore-comments t)
           )
       (while (not (eq (point) start-point))
-        (backward-up-list)
+        (el-spec:backward-up-list)
         (when
             (looking-at "(context\\|(describe")
           (save-excursion
@@ -321,7 +365,7 @@
      ;; (setq el-spec:descriptions (append (nth 1 (symbol-value context))
      ;;                                    el-spec:descriptions))
           (setq el-spec:vars (append (nth 2 ,context)
-                                el-spec:vars))
+                                     el-spec:vars))
        )
      ))
 
