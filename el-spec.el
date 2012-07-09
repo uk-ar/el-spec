@@ -390,6 +390,90 @@
                )));; )
     ))
 
+(defun el-spec:get-description ()
+  (save-excursion
+    (forward-sexp)
+    (forward-sexp)
+    (let ((arglist (read (substring-no-properties (thing-at-point 'sexp)))))
+      (destructuring-bind (desc &key vars)
+          (el-spec:prepare-arglist arglist)
+        (when (null desc)
+          (error "%S does not have string description" arglist))
+        (list el-spec:separator desc)))))
+
+(defun el-spec:get-description-for-it ()
+  (let ((descriptions))
+    (destructuring-bind (symbol arglist &rest body)
+        (read (substring-no-properties (thing-at-point 'list)))
+      (destructuring-bind (desc &key vars)
+          (el-spec:prepare-arglist arglist)
+        (when vars
+          (push (format "%S" vars) descriptions)
+          (push el-spec:separator descriptions)
+          )
+        (push (or desc (format "%S" body)) descriptions)
+        ))
+    descriptions
+    ))
+
+(defun el-spec:parse ()
+  (interactive)
+  (save-excursion
+    (while (re-search-forward "describe" (point-max) t)
+      (when (eq (function-called-at-point) 'describe)
+        (backward-sexp)
+        ;; (message "desc:%s:%s" (el-spec:get-description) (point))
+        (el-spec:parse-1 (el-spec:get-description))
+        )
+      )
+    ))
+
+;; (substring-no-properties (thing-at-point 'list))
+;; (substring-no-properties (thing-at-point 'sexp))
+
+(defun el-spec:parse-1 (descriptions)
+  (condition-case err
+      (while t
+        (condition-case err
+            (save-excursion
+              (down-list)
+              (let ((symbol (substring-no-properties
+                             (or (thing-at-point 'symbol) ""))))
+                (cond
+                 ((equal symbol "context")
+                  ;; (message "cont:%s"
+                  (el-spec:parse-1 (append (el-spec:get-description)
+                                           descriptions))
+                  ;; (point))
+                  )
+                 ((equal symbol "it")
+                  (message "it:%s"
+                           (apply 'concat
+                                  (reverse
+                                   (el-spec:parse-1
+                                    (append (el-spec:get-description-for-it)
+                                            descriptions)))) (point))
+                  )
+                 ((equal symbol "shared-examples")
+                  (message "share"))
+                 (t
+                  (el-spec:parse-1 descriptions))
+                 )
+                )
+              )
+          (scan-error
+           ;; bottom
+           ))
+        (forward-list)
+        (el-spec:parse-1 descriptions)
+        )
+    (scan-error
+     ;; end of list
+     )
+    )
+  descriptions
+  )
+
 (defmacro el-spec:include-examples (arglist)
   (cond
    ((stringp arglist)
