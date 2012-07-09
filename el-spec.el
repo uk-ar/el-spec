@@ -84,6 +84,9 @@
 
 ;; Revision 0.1 2012/07/05 00:55:38
 ;; * First release
+;;
+;;; Bug:
+;; (shared-examples ("examples for quote" :vars ((quote)))
 
 (require 'ert)
 (require 'cl)
@@ -116,22 +119,29 @@
     ,@body
     ))
 
+(defun el-spec:prepare-arglist (arglist)
+  (declare (indent 1))
+  (let ((arglist arglist))
+    (typecase arglist
+      (string (list arglist))
+      (null (list nil))
+      (cons
+       (typecase (car-safe arglist)
+         (string arglist)
+         (null arglist)
+         (keyword (push nil arglist))
+         (t
+          (error "%S is not string or list or nil" arglist))))
+      (t
+       (error "%S is not string or list or nil" arglist)))
+    ))
+
 (defun el-spec:compose (f g)
   `(lambda () (funcall (function ,g) (function ,f))))
 
 (defmacro el-spec:it (arglist &rest body)
   (declare (indent 1))
-  (cond
-   ((stringp arglist)
-    (setq arglist (list arglist)))
-   ((null arglist)
-    (setq arglist (list (format "%S" body))))
-   ((not (stringp (car arglist)))
-    (push (format "%S" body) arglist))
-   ((not (consp arglist))
-    (error "%S is not string or list or nil" arglist)
-    ))
-  (destructuring-bind (&optional desc &key vars) arglist
+  (destructuring-bind (&optional desc &key vars) (el-spec:prepare-arglist arglist)
     (lexical-let ((el-spec:full-context el-spec:full-context)
                   (el-spec:descriptions el-spec:descriptions))
       (push
@@ -162,13 +172,9 @@
 (defmacro el-spec:context (arglist &rest body)
   (declare (indent 1))
   ;; typecase
-  (cond
-   ((stringp arglist)
-    (setq arglist (list arglist)))
-   ((not (consp arglist))
-    (error "%S is not string or list" arglist)
-    ))
-  (destructuring-bind (desc &key vars) arglist
+  (destructuring-bind (desc &key vars) (el-spec:prepare-arglist arglist)
+    (when (null desc)
+      (error "%S is not has string description" arglist))
     `(let ((el-spec:full-context
             (if (boundp 'el-spec:full-context) el-spec:full-context nil))
            (el-spec:descriptions
@@ -371,13 +377,9 @@
 
 (defmacro el-spec:shared-examples (arglist &rest body)
   (declare (indent 1))
-  (cond
-   ((stringp arglist)
-    (setq arglist (list arglist)))
-   ((not (consp arglist))
-    (error "%S is not string or list" arglist)
-    ))
-  (destructuring-bind (desc &key vars) arglist
+  (destructuring-bind (desc &key vars) (el-spec:prepare-arglist arglist)
+    (when (null desc)
+      (error "%S is not has string description" arglist))
     `(setq ,(intern (format "el-spec:examples-%s" desc))
            (lambda ()
              ;; (let ((el-spec:full-context nil)
