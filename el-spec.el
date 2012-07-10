@@ -428,8 +428,10 @@
       )
     ))
 
-;; (substring-no-properties (thing-at-point 'list))
-;; (substring-no-properties (thing-at-point 'sexp))
+(defvar el-spec:tag nil)
+;; (make-variable-buffer-local 'el-spec:tag)
+;; Do not use buffer local variable.
+;; Because find-definition-noselect can not find definition.
 
 (defun el-spec:parse-1 (descriptions)
   (condition-case err
@@ -442,20 +444,27 @@
                 (cond
                  ((equal symbol "context")
                   ;; (message "cont:%s"
-                  (el-spec:parse-1 (append (el-spec:get-description)
-                                           descriptions))
+                  (el-spec:parse-1
+                   (append (el-spec:get-description) descriptions))
                   ;; (point))
                   )
                  ((equal symbol "it")
-                  (message "it:%s"
-                           (apply 'concat
+                  ;; (message "it:%s"
+                  (let ((test-name
+                          (intern
+                           (apply
+                            'concat
                                   (reverse
-                                   (el-spec:parse-1
-                                    (append (el-spec:get-description-for-it)
-                                            descriptions)))) (point))
+                             ;; (el-spec:parse-1
+                             (append
+                              (el-spec:get-description-for-it)
+                              descriptions))))));; )
+                    (push (cons test-name (point)) el-spec:tag))
+                  ;; (point))
                   )
                  ((equal symbol "shared-examples")
-                  (message "share"))
+                  ;; (message "share")
+                  )
                  (t
                   (el-spec:parse-1 descriptions))
                  )
@@ -497,6 +506,15 @@
   (eval-buffer)
   (ert t)
   )
+
+(defadvice find-definition-noselect
+  (after el-spec:find-definition-noselect-advice activate)
+  (destructuring-bind (symbol type &optional file) (ad-get-args 0))
+  (when (null (cdr-safe ad-return-value))
+    (setq ad-return-value
+          (cons (car-safe ad-return-value)
+                (assoc-default symbol el-spec:tag)))))
+
 
 ;;print test name
 (defun ert-insert-test-name-button (test-name)
