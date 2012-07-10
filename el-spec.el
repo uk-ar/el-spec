@@ -141,7 +141,8 @@
 
 (defmacro el-spec:it (arglist &rest body)
   (declare (indent 1))
-  (destructuring-bind (&optional desc &key vars) (el-spec:prepare-arglist arglist)
+  (destructuring-bind (&optional desc &key vars)
+      (el-spec:prepare-arglist arglist)
     (lexical-let ((el-spec:full-context el-spec:full-context)
                   (el-spec:descriptions el-spec:descriptions))
       (push
@@ -163,6 +164,13 @@
                (funcall ,(reduce #'el-spec:compose
                                  el-spec:full-context))
                )
+             ;; This hack allows `symbol-file' to associate `ert-deftest'
+             ;; forms with files, and therefore enables `find-function' to
+             ;; work with tests.  However, it leads to warnings in
+             ;; `unload-feature', which doesn't know how to undefine tests
+             ;; and has no mechanism for extension.
+             ;; (push '(ert-deftest . ,name) current-load-list)
+             ;; ',name))))
              )
            )
         ))))
@@ -174,7 +182,7 @@
   ;; typecase
   (destructuring-bind (desc &key vars) (el-spec:prepare-arglist arglist)
     (when (null desc)
-      (error "%S is not has string description" arglist))
+      (error "%S does not have string description" arglist))
     `(let ((el-spec:full-context
             (if (boundp 'el-spec:full-context) el-spec:full-context nil))
            (el-spec:descriptions
@@ -230,7 +238,7 @@
 
 (defmacro el-spec:let (varlist &rest body)
   (declare (indent 1))
-  (mapcar (lambda (element)
+  (mapc (lambda (element)
             (add-to-list
              'el-spec:vars (if (consp element) (car element) element)))
           varlist)
@@ -334,6 +342,7 @@
         (when
             (looking-at "(context\\|(describe")
           (save-excursion
+            ;; bug in ""
             (forward-word)
             (forward-word)
             (setq test-name
@@ -345,7 +354,6 @@
         )
       (ert test-name)
       )))
-
 
 (defmacro el-spec:shared-context (arglist &rest body)
   (declare (indent 1))
@@ -379,7 +387,7 @@
   (declare (indent 1))
   (destructuring-bind (desc &key vars) (el-spec:prepare-arglist arglist)
     (when (null desc)
-      (error "%S is not has string description" arglist))
+      (error "%S does not have string description" arglist))
     `(setq ,(intern (format "el-spec:examples-%s" desc))
            (lambda ()
              ;; (let ((el-spec:full-context nil)
