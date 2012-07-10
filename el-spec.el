@@ -402,6 +402,7 @@
         (list el-spec:separator desc)))))
 
 (defun el-spec:get-description-for-it ()
+  (save-excursion
   (let ((descriptions))
     (destructuring-bind (symbol arglist &rest body)
         (read (substring-no-properties (thing-at-point 'list)))
@@ -414,7 +415,7 @@
         (push (or desc (format "%S" body)) descriptions)
         ))
     descriptions
-    ))
+      )))
 
 (defun el-spec:parse ()
   (interactive)
