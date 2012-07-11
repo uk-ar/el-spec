@@ -204,6 +204,7 @@
   (makunbound 'el-spec:full-context)
   (makunbound 'el-spec:descriptions)
   (makunbound 'el-spec:vars)
+  (el-spec:parse)
   `(let ((el-spec:full-context nil)
          (el-spec:descriptions nil)
          (el-spec:vars nil))
@@ -285,13 +286,20 @@
                 (el-sepc:current-form-is-describe)))
       ad-do-it
     (ert-delete-all-tests)
-    ad-do-it
-    (cond
-     ((eq el-spec:selection 'all)
-      (ert t))
-     ((eq el-spec:selection 'context)
-      (el-spec:execute-context))
-     (t (warn "el-spec:selection is invalid")))
+    ;; for find-func
+    ;; too slow...
+    (if (null (assoc buffer-file-name load-history))
+        (eval-buffer)
+      ad-do-it
+      )
+    (case el-spec:selection
+      ((all)
+       (ert t))
+      ((context)
+       (el-spec:execute-context))
+      ((examples)
+       (el-spec:execute-examples))
+      (t (warn "el-spec:selection is invalid")))
     ))
 
 (defun el-spec:eval-and-execute-all ()
@@ -431,8 +439,8 @@
       )))
 
 (defun el-spec:parse ()
-  (interactive)
   (save-excursion
+    (goto-char (point-min))
     (while (re-search-forward "describe" (point-max) t)
       (when (eq (function-called-at-point) 'describe)
         (backward-sexp)
@@ -518,12 +526,14 @@
 
 (defadvice find-definition-noselect
   (after el-spec:find-definition-noselect-advice activate)
-  (destructuring-bind (symbol type &optional file) (ad-get-args 0))
-  (when (null (cdr-safe ad-return-value))
-    (setq ad-return-value
-          (cons (car-safe ad-return-value)
-                (assoc-default symbol el-spec:tag)))))
-
+  (destructuring-bind (symbol type &optional file) (ad-get-args 0)
+    (when (and (null (cdr-safe ad-return-value))
+               (eq type 'ert-deftest))
+      (let ((pos (assoc-default symbol el-spec:tag)))
+        (if pos
+            (setq ad-return-value
+                  (cons (car-safe ad-return-value) pos))
+          (error "Can not find function. shared-example?"))))))
 
 ;;print test name
 (defun ert-insert-test-name-button (test-name)
