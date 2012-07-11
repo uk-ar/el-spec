@@ -314,33 +314,87 @@
     (call-interactively 'eval-defun)
     ))
 
-(defun el-spec:execute-context ()
-  (save-excursion
-    (if (not (save-excursion
-               (backward-sexp)
-               (looking-at "(context\\|(describe")))
-        (el-spec:execute-context-1)
-      (backward-sexp)
-      (down-list)
-      (el-spec:execute-context-1)
-      )))
+(defun el-spec:eval-and-execute-examples ()
+  (interactive)
+  (let ((el-spec:selection 'examples))
+    (call-interactively 'eval-defun)
+    ))
 
-(defun el-spec:backward-up-list ()
+(defmacro el-spec:defun-sexp (name)
+  `(defun ,(intern (format "el-spec:%s" name)) (&optional arg)
+     (condition-case err
+         (progn
+           (if (or (nth 3 (syntax-ppss));string
+                   (nth 4 (syntax-ppss)));comment
+               (goto-char (nth 8 (syntax-ppss)));; beginning
+             )
+           (,name arg))
+       (scan-error
+        ;;top level
+        ))))
+
+(el-spec:defun-sexp backward-sexp)
+(el-spec:defun-sexp down-list)
+
+(defun el-spec:backward-up-list (&optional arg)
   (condition-case err
       (progn
         (if (or (nth 3 (syntax-ppss));string
                 (nth 4 (syntax-ppss)));comment
-            (goto-char (nth 8 (syntax-ppss))))
-        (backward-up-list))
+            (goto-char (nth 8 (syntax-ppss)));; beginning
+          )
+        (backward-up-list arg))
     (scan-error
-     (message "top level")
      ;;top level
      )))
+
+(defun el-spec:re-position ()
+  (if (or (nth 3 (syntax-ppss));string
+          (nth 4 (syntax-ppss)));comment
+      (goto-char (nth 8 (syntax-ppss)));; beginning
+    ))
 
 (defvar el-spec:tag nil)
 ;; (make-variable-buffer-local 'el-spec:tag)
 ;; Do not use buffer local variable.
 ;; Because find-definition-noselect can not find definition.
+
+(defun el-spec:execute-examples ()
+  (save-excursion
+    (el-spec:re-position)
+    (let ((pos
+           (save-excursion
+             (el-spec:backward-sexp)
+             (el-spec:down-list)
+             (if (string= (thing-at-point 'symbol) 'it)
+                 (point) nil))))
+      (unless pos
+        (condition-case err
+            (while (null pos)
+              (backward-up-list)
+              (save-excursion
+                (el-spec:down-list)
+                (when (string= (thing-at-point 'symbol) 'it)
+                  (setq pos (point)))))
+          (scan-error
+           ;;top level
+           )))
+      (if pos
+          (ert (symbol-name (car-safe (rassoc pos el-spec:tag))))
+        (message "no example")
+        ))
+    ))
+
+(defun el-spec:execute-context ()
+  (save-excursion
+    (if (not (save-excursion
+               (el-spec:backward-sexp)
+               (looking-at "(context\\|(describe")))
+        (el-spec:execute-context-1)
+      (el-spec:backward-sexp)
+      (el-spec:down-list)
+      (el-spec:execute-context-1)
+      )))
 
 (defun el-spec:execute-context-1 ()
   (save-excursion
