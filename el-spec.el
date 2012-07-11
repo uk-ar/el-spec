@@ -139,6 +139,8 @@
 (defun el-spec:compose (f g)
   `(lambda () (funcall (function ,g) (function ,f))))
 
+(defconst el-spec:separator "\n")
+
 (defmacro el-spec:it (arglist &rest body)
   (declare (indent 1))
   (destructuring-bind (&optional desc &key vars)
@@ -175,8 +177,6 @@
            )
         ))))
 
-(defconst el-spec:separator "\n")
-
 (defmacro el-spec:context (arglist &rest body)
   (declare (indent 1))
   ;; typecase
@@ -188,7 +188,7 @@
            (el-spec:descriptions
             (if (boundp 'el-spec:descriptions) el-spec:descriptions nil))
            (el-spec:vars
-            (if (boundp 'el-spec:descriptions) el-spec:vars nil)))
+            (if (boundp 'el-spec:vars) el-spec:vars nil)))
        (push ,desc el-spec:descriptions)
        (push el-spec:separator el-spec:descriptions)
        ;; fix?
@@ -329,6 +329,11 @@
      ;;top level
      )))
 
+(defvar el-spec:tag nil)
+;; (make-variable-buffer-local 'el-spec:tag)
+;; Do not use buffer local variable.
+;; Because find-definition-noselect can not find definition.
+
 (defun el-spec:execute-context-1 ()
   (save-excursion
     (let ((start-point
@@ -436,11 +441,6 @@
         )
       )
     ))
-
-(defvar el-spec:tag nil)
-;; (make-variable-buffer-local 'el-spec:tag)
-;; Do not use buffer local variable.
-;; Because find-definition-noselect can not find definition.
 
 (defun el-spec:parse-1 (descriptions)
   (condition-case err
