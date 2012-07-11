@@ -364,8 +364,7 @@
       (goto-char (nth 8 (syntax-ppss)));; beginning
     ))
 
-(defvar el-spec:tag nil)
-;; (make-variable-buffer-local 'el-spec:tag)
+(defvar el-spec:example-tag nil)
 ;; Do not use buffer local variable.
 ;; Because find-definition-noselect can not find definition.
 
@@ -376,61 +375,30 @@
            (save-excursion
              (el-spec:backward-sexp)
              (el-spec:down-list)
-             (if (string= (thing-at-point 'symbol) 'it)
-                 (point) nil))))
+             (let ((symbol (substring-no-properties (thing-at-point 'symbol))))
+               (if (or (string= symbol "it")
+                       (string= symbol "context"))
+                   (point) nil)
+               ))))
       (unless pos
         (condition-case err
             (while (null pos)
               (backward-up-list)
               (save-excursion
                 (el-spec:down-list)
-                (when (string= (thing-at-point 'symbol) 'it)
-                  (setq pos (point)))))
+                (let ((symbol (substring-no-properties (thing-at-point 'symbol))))
+                  (if (or (string= symbol "it")
+                          (string= symbol "context"))
+                      (setq pos (point))))
+                ))
           (scan-error
            ;;top level
            )))
       (if pos
-          (ert (symbol-name (car-safe (rassoc pos el-spec:tag))))
+          (ert (symbol-name (car-safe (rassoc pos el-spec:example-tag))))
         (message "no example")
         ))
     ))
-
-(defun el-spec:execute-context ()
-  (save-excursion
-    (if (not (save-excursion
-               (el-spec:backward-sexp)
-               (looking-at "(context\\|(describe")))
-        (el-spec:execute-context-1)
-      (el-spec:backward-sexp)
-      (el-spec:down-list)
-      (el-spec:execute-context-1)
-      )))
-
-(defun el-spec:execute-context-1 ()
-  (save-excursion
-    (let ((start-point
-           (save-excursion (beginning-of-defun) (point)))
-          (test-name nil)
-          ;; for backward-up-list
-          ;;(parse-sexp-ignore-comments t)
-          )
-      (while (not (eq (point) start-point))
-        (el-spec:backward-up-list)
-        (when
-            (looking-at "(context\\|(describe")
-          (save-excursion
-            ;; bug in ""
-            (forward-word)
-            (forward-word)
-            (setq test-name
-                  (concat
-                   (car (split-string-and-unquote (thing-at-point 'string) "\""))
-                   "\n" test-name))
-            )
-          )
-        )
-      (ert test-name)
-      )))
 
 (defmacro el-spec:shared-context (arglist &rest body)
   (declare (indent 1))
@@ -524,11 +492,11 @@
                              (or (thing-at-point 'symbol) ""))))
                 (cond
                  ((equal symbol "context")
-                  ;; (message "cont:%s"
-                  (el-spec:parse-1
-                   (append (el-spec:get-description) descriptions))
-                  ;; (point))
-                  )
+                  (let ((desc (append (el-spec:get-description) descriptions)))
+                    (push (cons (intern (apply 'concat (reverse desc)))
+                                (point)) el-spec:example-tag)
+                    (el-spec:parse-1 desc)
+                    ))
                  ((equal symbol "it")
                   ;; (message "it:%s"
                   (let ((test-name
@@ -540,7 +508,7 @@
                             (append
                              (el-spec:get-description-for-it)
                              descriptions))))));; )
-                    (push (cons test-name (point)) el-spec:tag))
+                    (push (cons test-name (point)) el-spec:example-tag))
                   ;; (point))
                   )
                  ((equal symbol "shared-examples")
@@ -593,7 +561,7 @@
   (destructuring-bind (symbol type &optional file) (ad-get-args 0)
     (when (and (null (cdr-safe ad-return-value))
                (eq type 'ert-deftest))
-      (let ((pos (assoc-default symbol el-spec:tag)))
+      (let ((pos (assoc-default symbol el-spec:example-tag)))
         (if pos
             (setq ad-return-value
                   (cons (car-safe ad-return-value) pos))
