@@ -281,6 +281,16 @@
         (popwin:popup-buffer-tail "*ert*"))
     ad-do-it))
 
+;; copy from ert
+(defun ert-find-test-other-window (test-name)
+  "Find, in another window, the definition of TEST-NAME."
+  (interactive (list (ert-read-test-name-at-point "Find test definition: ")))
+  (let ;; ((pop-up-windows t)
+      ;;  (pop-up-frames t))
+      ((display-buffer-reuse-frames t))
+    (find-function-do-it test-name 'ert-deftest 'pop-to-buffer))
+  );; 'switch-to-buffer-other-window
+
 (defadvice eval-defun (around el-spec:eval-defun-advice activate)
   (if (not (and (interactive-p)
                 (el-sepc:current-form-is-describe)))
