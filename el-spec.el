@@ -240,9 +240,9 @@
 (defmacro el-spec:let (varlist &rest body)
   (declare (indent 1))
   (mapc (lambda (element)
-            (add-to-list
-             'el-spec:vars (if (consp element) (car element) element)))
-          varlist)
+          (add-to-list
+           'el-spec:vars (if (consp element) (car element) element)))
+        varlist)
   `(let ,varlist
      ,@body
      )
@@ -387,14 +387,14 @@
   ;; macro for set el-spec:full-context
   (let ((context (intern (format "el-spec:context-%s" desc))))
     `(progn
-          (setq el-spec:full-context (append (car ,context)
-                                        el-spec:full-context))
-     ;; (setq el-spec:descriptions (append (nth 1 (symbol-value context))
-     ;;                                    el-spec:descriptions))
-          (setq el-spec:vars (append (nth 2 ,context)
-                                     el-spec:vars))
+       (setq el-spec:full-context (append (car ,context)
+                                          el-spec:full-context))
+       ;; (setq el-spec:descriptions (append (nth 1 (symbol-value context))
+       ;;                                    el-spec:descriptions))
+       (setq el-spec:vars (append (nth 2 ,context)
+                                  el-spec:vars))
        )
-     ))
+    ))
 
 (defmacro el-spec:shared-examples (arglist &rest body)
   (declare (indent 1))
@@ -424,18 +424,18 @@
 
 (defun el-spec:get-description-for-it ()
   (save-excursion
-  (let ((descriptions))
-    (destructuring-bind (symbol arglist &rest body)
-        (read (substring-no-properties (thing-at-point 'list)))
-      (destructuring-bind (desc &key vars)
-          (el-spec:prepare-arglist arglist)
-        (when vars
-          (push (format "%S" vars) descriptions)
-          (push el-spec:separator descriptions)
-          )
-        (push (or desc (format "%S" body)) descriptions)
-        ))
-    descriptions
+    (let ((descriptions))
+      (destructuring-bind (symbol arglist &rest body)
+          (read (substring-no-properties (thing-at-point 'list)))
+        (destructuring-bind (desc &key vars)
+            (el-spec:prepare-arglist arglist)
+          (when vars
+            (push (format "%S" vars) descriptions)
+            (push el-spec:separator descriptions)
+            )
+          (push (or desc (format "%S" body)) descriptions)
+          ))
+      descriptions
       )))
 
 (defun el-spec:parse ()
@@ -468,14 +468,14 @@
                  ((equal symbol "it")
                   ;; (message "it:%s"
                   (let ((test-name
-                          (intern
-                           (apply
-                            'concat
-                                  (reverse
-                             ;; (el-spec:parse-1
-                             (append
-                              (el-spec:get-description-for-it)
-                              descriptions))))));; )
+                         (intern
+                          (apply
+                           'concat
+                           (reverse
+                            ;; (el-spec:parse-1
+                            (append
+                             (el-spec:get-description-for-it)
+                             descriptions))))));; )
                     (push (cons test-name (point)) el-spec:tag))
                   ;; (point))
                   )
