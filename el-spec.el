@@ -265,10 +265,10 @@
   (interactive)
   (cond
    ((eq el-spec:selection 'all)
-    (setq el-spec:selection 'context)
-    (message "selection:context")
+    (setq el-spec:selection 'examples)
+    (message "selection:examples")
     )
-   ((eq el-spec:selection 'context)
+   ((eq el-spec:selection 'examples)
     (setq el-spec:selection 'all)
     (message "selection:all"))
    (t (warn "el-spec:selection is invalid"))))
@@ -305,8 +305,6 @@
     (case el-spec:selection
       ((all)
        (ert t))
-      ((context)
-       (el-spec:execute-context))
       ((examples)
        (el-spec:execute-examples))
       (t (warn "el-spec:selection is invalid")))
