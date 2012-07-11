@@ -316,12 +316,6 @@
     (call-interactively 'eval-defun)
     ))
 
-(defun el-spec:eval-and-execute-context ()
-  (interactive)
-  (let ((el-spec:selection 'context))
-    (call-interactively 'eval-defun)
-    ))
-
 (defun el-spec:eval-and-execute-examples ()
   (interactive)
   (let ((el-spec:selection 'examples))
@@ -343,18 +337,6 @@
 
 (el-spec:defun-sexp backward-sexp)
 (el-spec:defun-sexp down-list)
-
-(defun el-spec:backward-up-list (&optional arg)
-  (condition-case err
-      (progn
-        (if (or (nth 3 (syntax-ppss));string
-                (nth 4 (syntax-ppss)));comment
-            (goto-char (nth 8 (syntax-ppss)));; beginning
-          )
-        (backward-up-list arg))
-    (scan-error
-     ;;top level
-     )))
 
 (defun el-spec:re-position ()
   (if (or (nth 3 (syntax-ppss));string
