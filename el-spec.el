@@ -398,7 +398,6 @@
          (el-spec:vars nil))
      (el-spec:context ,arglist
        ,@body
-       ;; (message "des:%S" (car (last el-spec:descriptions)))
        (set (intern (format "el-spec:context-%s"
                             (car (last el-spec:descriptions))))
             (list el-spec:full-context
@@ -467,7 +466,6 @@
     (while (re-search-forward "describe" (point-max) t)
       (when (eq (function-called-at-point) 'describe)
         (backward-sexp)
-        ;; (message "desc:%s:%s" (el-spec:get-description) (point))
         (push (cons (intern (apply 'concat (reverse (el-spec:get-description))))
                     (point))
               el-spec:example-tag)
@@ -492,7 +490,6 @@
                     (el-spec:parse-1 desc)
                     ))
                  ((equal symbol "it")
-                  ;; (message "it:%s"
                   (let ((test-name
                          (intern
                           (apply
@@ -503,7 +500,6 @@
                              (el-spec:get-description-for-it)
                              descriptions))))));; )
                     (push (cons test-name (point)) el-spec:example-tag))
-                  ;; (point))
                   )
                  ((equal symbol "shared-examples")
                   ;; (message "share")
