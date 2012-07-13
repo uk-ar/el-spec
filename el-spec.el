@@ -251,6 +251,7 @@
 ;; copy from el-expectations
 (defun el-sepc:current-form-is-describe ()
   (save-excursion
+    (forward-char)
     (beginning-of-defun)
     (looking-at "(describe\\|(.+(fboundp 'describe)\\|(dont-compile\n.*describe")))
 
@@ -355,35 +356,40 @@
 
 (defun el-spec:execute-examples ()
   (save-excursion
-    (el-spec:re-position)
     (let ((pos
            (save-excursion
-             (el-spec:backward-sexp)
-             (el-spec:down-list)
-             (let ((symbol (substring-no-properties (thing-at-point 'symbol))))
+             (forward-char)
+             (let ((symbol (substring-no-properties
+                            (or (thing-at-point 'symbol) ""))))
                (if (or (string= symbol "it")
-                       (string= symbol "context"))
+                       (string= symbol "context")
+                       (string= symbol "describe"))
                    (point) nil)
                ))))
+      (backward-char)
+      (el-spec:re-position)
       (unless pos
         (condition-case err
             (while (null pos)
               (backward-up-list)
               (save-excursion
                 (el-spec:down-list)
-                (let ((symbol (substring-no-properties (thing-at-point 'symbol))))
+                (let ((symbol (substring-no-properties
+                               (or (thing-at-point 'symbol) ""))))
                   (if (or (string= symbol "it")
-                          (string= symbol "context"))
+                          (string= symbol "context")
+                          (string= symbol "describe"))
                       (setq pos (point))))
                 ))
           (scan-error
            ;;top level
            )))
-      (if pos
-          (ert (symbol-name (car-safe (rassoc pos el-spec:example-tag))))
+      (let ((symbol (car-safe (rassoc pos el-spec:example-tag))))
+        (if symbol
+            (ert (symbol-name symbol))
         (message "no example")
         ))
-    ))
+      )))
 
 (defmacro el-spec:shared-context (arglist &rest body)
   (declare (indent 1))
@@ -462,6 +468,9 @@
       (when (eq (function-called-at-point) 'describe)
         (backward-sexp)
         ;; (message "desc:%s:%s" (el-spec:get-description) (point))
+        (push (cons (intern (apply 'concat (reverse (el-spec:get-description))))
+                    (point))
+              el-spec:example-tag)
         (el-spec:parse-1 (el-spec:get-description))
         )
       )
