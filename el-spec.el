@@ -464,7 +464,10 @@
   (save-excursion
     (goto-char (point-min))
     (while (re-search-forward "describe" (point-max) t)
-      (when (eq (function-called-at-point) 'describe)
+      (when (and (eq  (function-called-at-point) 'describe)
+                 (not (or (nth 3 (syntax-ppss));string
+                          (nth 4 (syntax-ppss))));comment
+                     )
         (backward-sexp)
         (push (cons (intern (apply 'concat (reverse (el-spec:get-description))))
                     (point))
