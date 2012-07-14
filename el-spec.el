@@ -356,7 +356,7 @@
 
 (defun el-spec:execute-examples ()
   (save-excursion
-    (let ((pos
+    (let ((test-name
            (save-excursion
              (forward-char)
              (let ((symbol (substring-no-properties
@@ -364,13 +364,13 @@
                (if (or (string= symbol "it")
                        (string= symbol "context")
                        (string= symbol "describe"))
-                   (point) nil)
+                   (car-safe (rassoc (point) el-spec:example-tag)) nil)
                ))))
       (backward-char)
       (el-spec:re-position)
-      (unless pos
+      (unless test-name
         (condition-case err
-            (while (null pos)
+            (while (null test-name)
               (backward-up-list)
               (save-excursion
                 (el-spec:down-list)
@@ -379,17 +379,17 @@
                   (if (or (string= symbol "it")
                           (string= symbol "context")
                           (string= symbol "describe"))
-                      (setq pos (point))))
+                      (setq test-name
+                            (car-safe (rassoc (point) el-spec:example-tag)))))
                 ))
           (scan-error
            ;;top level
            )))
-      (let ((symbol (car-safe (rassoc pos el-spec:example-tag))))
-        (if symbol
-            (ert (symbol-name symbol))
+        (if test-name
+            (ert (symbol-name test-name))
         (message "no example")
         ))
-      )))
+      ))
 
 (defmacro el-spec:shared-context (arglist &rest body)
   (declare (indent 1))
