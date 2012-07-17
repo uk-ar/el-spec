@@ -342,13 +342,20 @@
         ))))
 
 (el-spec:defun-sexp backward-sexp)
+(el-spec:defun-sexp backward-up-list)
 (el-spec:defun-sexp down-list)
+(el-spec:defun-sexp forward-sexp)
 
 (defun el-spec:re-position ()
   (if (or (nth 3 (syntax-ppss));string
           (nth 4 (syntax-ppss)));comment
       (goto-char (nth 8 (syntax-ppss)));; beginning
     ))
+
+(defun el-spec:string-or-comment-p ()
+  (or (nth 3 (syntax-ppss));string
+      (nth 4 (syntax-ppss)));comment
+    )
 
 (defvar el-spec:example-tag nil)
 ;; Do not use buffer local variable.
@@ -460,14 +467,26 @@
       descriptions
       )))
 
+(defun el-spec:first-element ()
+  (save-excursion
+    (el-spec:re-position)
+    ;; (car (read (substring-no-properties (or (thing-at-point 'list) ""))))
+    (el-spec:backward-up-list);;top-level
+    (el-spec:down-list)
+    (el-spec:forward-sexp)
+    (substring-no-properties (thing-at-point 'symbol))
+    )
+  )
+
 (defun el-spec:parse ()
   (save-excursion
     (goto-char (point-min))
-    (while (re-search-forward "describe" (point-max) t)
-      (when (and (eq  (function-called-at-point) 'describe)
-                 (not (or (nth 3 (syntax-ppss));string
-                          (nth 4 (syntax-ppss))));comment
-                     )
+    (while (and (re-search-forward "describe" (point-max) t)
+                (not (el-spec:string-or-comment-p)))
+      ;; in case for
+      ;; (;; comment
+      ;;  describe
+      (when (string= (el-spec:first-element) "describe")
         (backward-sexp)
         (push (cons (intern (apply 'concat (reverse (el-spec:get-description))))
                     (point))
