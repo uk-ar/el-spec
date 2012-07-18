@@ -26,7 +26,7 @@
 ;; Author: Yuuki Arisawa <yuuki.ari@gmail.com>
 ;; URL: https://github.com/uk-ar/el-spec
 ;; Created: 4 July 2012
-;; Version: 0.1
+;; Version: 0.2
 ;; Keywords: test
 
 ;;; Commentary:
@@ -79,9 +79,13 @@
 ;; test 2
 ;; after 2
 ;; after common
-;;
-;;; History:
 
+;;; History:
+;;
+;; Revision 0.2 2012/07/18 21:06:41
+;; * Add support to find example definition from ert test result.
+;; * Add function to execute one example.
+;;
 ;; Revision 0.1 2012/07/05 00:55:38
 ;; * First release
 ;;
