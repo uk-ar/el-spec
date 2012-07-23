@@ -367,7 +367,7 @@
 (defun el-spec:string-or-comment-p ()
   (or (nth 3 (syntax-ppss));string
       (nth 4 (syntax-ppss)));comment
-    )
+  )
 
 (defvar el-spec:example-tag nil)
 ;; Do not use buffer local variable.
@@ -404,11 +404,11 @@
           (scan-error
            ;;top level
            )))
-        (if test-name
-            (ert (symbol-name test-name))
+      (if test-name
+          (ert (regexp-quote (symbol-name test-name)))
         (message "no example")
         ))
-      ))
+    ))
 
 (defmacro el-spec:shared-context (arglist &rest body)
   (declare (indent 1))
