@@ -175,7 +175,7 @@
              ;; work with tests.  However, it leads to warnings in
              ;; `unload-feature', which doesn't know how to undefine tests
              ;; and has no mechanism for extension.
-             ;; (push '(ert-deftest . ,name) current-load-list)
+             (push '(ert-deftest . ,test-symbol) current-load-list)
              ;; ',name))))
              )
            )
