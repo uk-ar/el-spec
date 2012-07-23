@@ -255,9 +255,17 @@
 ;; copy from el-expectations
 (defun el-sepc:current-form-is-describe ()
   (save-excursion
-    (forward-char)
-    (beginning-of-defun)
-    (looking-at "(describe\\|(.+(fboundp 'describe)\\|(dont-compile\n.*describe")))
+    (let ((limit (point)))
+      (forward-char)
+      (beginning-of-defun)
+      (condition-case err
+          (progn
+            (while (not (and (re-search-forward "describe" limit)
+                             (not (el-spec:string-or-comment-p))
+                             (string= (el-spec:first-element) "describe"))))
+            t)
+        (search-failed
+         nil)))))
 
 (substitute-key-definition 'expectations-eval-defun 'eval-defun emacs-lisp-mode-map)
 (substitute-key-definition 'expectations-eval-defun 'eval-defun lisp-interaction-mode-map)
