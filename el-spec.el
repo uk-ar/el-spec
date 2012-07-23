@@ -315,11 +315,11 @@
     ;; for find-func
     ;; (assoc buffer-file-name load-history) is too slow...
     (if el-spec:first-time-p
-        (progn
-        (eval-buffer)
-          (setq el-spec:first-time-p nil))
-      ad-do-it
-      )
+        (if (not (assoc buffer-file-name load-history))
+            (eval-buffer)
+          ad-do-it
+          )
+      (setq el-spec:first-time-p nil))
     (case el-spec:selection
       ((all)
        (ert t))
