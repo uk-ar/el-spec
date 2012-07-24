@@ -176,6 +176,8 @@
              ;; `unload-feature', which doesn't know how to undefine tests
              ;; and has no mechanism for extension.
              (push '(ert-deftest . ,test-symbol) current-load-list)
+             ;; for not print current-load-list
+             nil
              ;; ',name))))
              )
            )
@@ -319,6 +321,7 @@
             (eval-buffer)
           ad-do-it
           )
+      (message "first-time!")
       (setq el-spec:first-time-p nil))
     (case el-spec:selection
       ((all)
@@ -405,7 +408,7 @@
            ;;top level
            )))
       (if test-name
-          (ert (regexp-quote (symbol-name test-name)))
+          (ert (concat "\\`" (regexp-quote (symbol-name test-name))))
         (message "no example")
         ))
     ))
