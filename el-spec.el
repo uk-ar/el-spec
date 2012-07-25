@@ -496,12 +496,12 @@
 (defun el-spec:parse ()
   (save-excursion
     (goto-char (point-min))
-    (while (and (re-search-forward "describe" (point-max) t)
-                (not (el-spec:string-or-comment-p)))
+    (while (re-search-forward "describe" (point-max) t)
       ;; in case for
       ;; (;; comment
       ;;  describe
-      (when (string= (el-spec:first-element) "describe")
+      (when (and (not (el-spec:string-or-comment-p))
+                 (string= (el-spec:first-element) "describe"))
         (backward-sexp)
         (push (cons (intern (apply 'concat (reverse (el-spec:get-description))))
                     (point))
