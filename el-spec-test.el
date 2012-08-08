@@ -445,10 +445,15 @@ after01
         (ex3 (intern "shared examples\ncontext2\nexamples0\nit1"))
         (ex4 (intern "shared examples\ncontext2\nexamples0\nit2"))
         )
-    (should (equal (ert-test-boundp ex1) nil))
-    (should (equal (ert-test-boundp ex2) nil))
-    (should (equal (ert-test-boundp ex3) nil))
-    (should (equal (ert-test-boundp ex4) nil))
+    (should-not (ert-test-boundp ex1))
+    (should-not (ert-test-boundp ex2))
+    (should-not (ert-test-boundp ex3))
+    (should-not (ert-test-boundp ex4))
+    ;; (should-not (member `(ert-deftest . ,ex1) current-load-list))
+    (should-not (assoc-default (current-buffer) el-spec:load-history))
+    (should-not
+     (member `(ert-deftest . ,ex1)
+             (assoc-default (current-buffer) el-spec:load-history)))
 
     (describe "shared examples"
       (shared-examples "examples0"
@@ -474,7 +479,12 @@ after01
           )
         (include-examples "examples0")
         ))
-
+    (should (member `(ert-deftest . ,ex1) current-load-list))
+    (should (assoc-default (current-buffer) el-spec:load-history))
+    (should
+     (member `(ert-deftest . ,ex1)
+              (assoc-default (current-buffer) el-spec:load-history)))
+    (should (member `(ert-deftest . ,ex1) current-load-list))
     (let ((result (ert-run-test
                    (ert-get-test
                     ex1))))
@@ -515,6 +525,8 @@ around21
 example2
 around22
 ")))
+    ;; (el-spec:parse)
+    ;; (should (find-definition-noselect ex1 'ert-deftest))
     )
   )
 

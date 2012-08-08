@@ -170,15 +170,8 @@
                (funcall ,(reduce #'el-spec:compose
                                  el-spec:full-context))
                )
-             ;; This hack allows `symbol-file' to associate `ert-deftest'
-             ;; forms with files, and therefore enables `find-function' to
-             ;; work with tests.  However, it leads to warnings in
-             ;; `unload-feature', which doesn't know how to undefine tests
-             ;; and has no mechanism for extension.
-             (push '(ert-deftest . ,test-symbol) current-load-list)
-             ;; for not print current-load-list
-             nil
-             ;; ',name))))
+             ;; '(ert-deftest . ,test-symbol) is pushed in current-load-list
+             ;; when ert-deftest called.
              )
            )
         ))))
@@ -204,12 +197,22 @@
        )
     ))
 
+(defvar el-spec:load-history nil)
+
+(defun el-spec:clean-up ()
+  (setq el-spec:load-history
+        (delq (assoc (current-buffer) el-spec:load-history)
+              el-spec:load-history)))
+
 (defmacro describe (arglist &rest body)
   (declare (indent 1))
   ;; for failed test
   (makunbound 'el-spec:full-context)
   (makunbound 'el-spec:descriptions)
   (makunbound 'el-spec:vars)
+  (add-hook
+   'kill-buffer-hook
+   'el-spec:clean-up nil t)
   (el-spec:parse)
   `(let ((el-spec:full-context nil)
          (el-spec:descriptions nil)
@@ -232,6 +235,16 @@
        (el-spec:context ,arglist
          ,@body
          ))
+     (let ((current-history (assoc (current-buffer) el-spec:load-history))
+           ;; for delete-dups
+           (current-load-list current-load-list))
+       (when current-history
+         (setq el-spec:load-history
+               (delq current-history el-spec:load-history)))
+       (push (append (list (current-buffer))
+                     (delete-dups current-load-list))
+             el-spec:load-history)
+       nil)
      )
   )
 
@@ -583,16 +596,20 @@
   (ert t)
   )
 
-(defadvice find-definition-noselect
-  (after el-spec:find-definition-noselect-advice activate)
-  (destructuring-bind (symbol type &optional file) (ad-get-args 0)
-    (when (and (null (cdr-safe ad-return-value))
+(defadvice find-function-search-for-symbol
+  (around el-spec:find-function-search-for-symbol activate)
+  ;; return a cons cell (BUFFER . POSITION),
+  (destructuring-bind (symbol type library) (ad-get-args 0)
+    (if (and (null library)
                (eq type 'ert-deftest))
-      (let ((pos (assoc-default symbol el-spec:example-tag)))
+        (let ((buffer (let ((load-history el-spec:load-history))
+                        (symbol-file symbol)))
+              (pos (assoc-default symbol el-spec:example-tag)))
         (if pos
-            (setq ad-return-value
-                  (cons (car-safe ad-return-value) pos))
-          (error "Can not find function. shared-example?"))))))
+              (setq ad-return-value (cons buffer pos))
+            (error "Can not find function. shared-example?")))
+      ad-do-it
+      )))
 
 ;;print test name
 (defun ert-insert-test-name-button (test-name)
