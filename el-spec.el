@@ -91,6 +91,7 @@
 ;;
 ;;; Bug:
 ;; (shared-examples ("examples for quote" :vars ((quote)))
+;; (should (eq 1) 2)
 
 (require 'ert)
 (require 'cl)
@@ -396,6 +397,7 @@
              (forward-char)
              (let ((symbol (substring-no-properties
                             (or (thing-at-point 'symbol) ""))))
+               ;; (let ((symbol (or (el-spec:first-element) "")))
                (if (or (string= symbol "it")
                        (string= symbol "context")
                        (string= symbol "describe"))
@@ -411,6 +413,7 @@
                 (el-spec:down-list)
                 (let ((symbol (substring-no-properties
                                (or (thing-at-point 'symbol) ""))))
+                  ;; ((symbol (or (el-spec:first-element) "")))
                   (if (or (string= symbol "it")
                           (string= symbol "context")
                           (string= symbol "describe"))
@@ -516,6 +519,8 @@
       (when (and (not (el-spec:string-or-comment-p))
                  (string= (el-spec:first-element) "describe"))
         (backward-sexp)
+        ;; create el-spec:example-tag when parse.
+        ;; Because point is not correct when define.
         (push (cons (intern (apply 'concat (reverse (el-spec:get-description))))
                     (point))
               el-spec:example-tag)
