@@ -271,7 +271,7 @@
 ;; copy from el-expectations
 (defun el-sepc:current-form-is-describe ()
   (save-excursion
-    (let ((limit (point)))
+    (let ((limit (end-of-defun)))
       (forward-char)
       (beginning-of-defun)
       (condition-case err
