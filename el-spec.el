@@ -205,8 +205,9 @@
         (delq (assoc (current-buffer) el-spec:load-history)
               el-spec:load-history)))
 
+;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Instrumenting-Macro-Calls.html#Instrumenting-Macro-Calls
 (defmacro describe (arglist &rest body)
-  (declare (indent 1))
+  (declare (indent 1) (edebug (form &rest form)))
   ;; for failed test
   (makunbound 'el-spec:full-context)
   (makunbound 'el-spec:descriptions)
@@ -271,7 +272,7 @@
 ;; copy from el-expectations
 (defun el-sepc:current-form-is-describe ()
   (save-excursion
-    (let ((limit (end-of-defun)))
+    (let ((limit (progn (end-of-defun) (point))))
       (forward-char)
       (beginning-of-defun)
       (condition-case err
@@ -320,7 +321,6 @@
     (find-function-do-it test-name 'ert-deftest 'pop-to-buffer))
   );; 'switch-to-buffer-other-window
 
-(defvar el-spec:first-time-p t)
 (make-variable-buffer-local 'el-spec:first-time-p)
 
 (defadvice eval-defun (around el-spec:eval-defun-advice activate)
@@ -328,15 +328,7 @@
                 (el-sepc:current-form-is-describe)))
       ad-do-it
     (ert-delete-all-tests)
-    ;; for find-func
-    ;; (assoc buffer-file-name load-history) is too slow...
-    (if el-spec:first-time-p
-        (if (not (assoc buffer-file-name load-history))
-            (eval-buffer)
           ad-do-it
-          )
-      (message "first-time!")
-      (setq el-spec:first-time-p nil))
     (case el-spec:selection
       ((all)
        (ert t))
