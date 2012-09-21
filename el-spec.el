@@ -207,7 +207,7 @@
 
 ;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Instrumenting-Macro-Calls.html#Instrumenting-Macro-Calls
 (defmacro describe (arglist &rest body)
-  (declare (indent 1) (edebug (form &rest form)))
+  (declare (indent 1) (debug t))
   ;; for failed test
   (makunbound 'el-spec:full-context)
   (makunbound 'el-spec:descriptions)
