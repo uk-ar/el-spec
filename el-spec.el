@@ -273,7 +273,7 @@
 (defun el-sepc:current-form-is-describe ()
   (save-excursion
     (let ((limit (progn (end-of-defun) (point))))
-      (forward-char)
+      (unless (eobp) (forward-char))
       (beginning-of-defun)
       (condition-case err
           (progn
@@ -604,7 +604,7 @@
               (pos (assoc-default symbol el-spec:example-tag)))
         (if pos
               (setq ad-return-value (cons buffer pos))
-            (error "Can not find function. shared-example?")))
+            (error "Can not find function. shared-example or removed?")))
       ad-do-it
       )))
 
