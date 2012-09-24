@@ -305,7 +305,7 @@
 
 (defadvice ert (around el-spec:ert-advice activate)
   (if (and (fboundp 'popwin:popup-buffer-tail)
-           (not (interactive-p)))
+           (not (call-interactive-p)))
       (let ((special-display-function 'popwin:popup-buffer-tail))
         ad-do-it
         (popwin:popup-buffer-tail "*ert*"))
@@ -324,7 +324,7 @@
 (make-variable-buffer-local 'el-spec:first-time-p)
 
 (defadvice eval-defun (around el-spec:eval-defun-advice activate)
-  (if (not (and (interactive-p)
+  (if (not (and (call-interactive-p)
                 (el-sepc:current-form-is-describe)))
       ad-do-it
     (ert-delete-all-tests)
