@@ -97,11 +97,11 @@
 (require 'cl)
 
 (defmacro el-spec:around (&rest body)
-  (push
-   `(lambda (el-spec:example)
+  `(push
+    (lambda (el-spec:example)
       ,@body)
-   el-spec:full-context)
-  nil)
+    el-spec:full-context)
+  )
 
 (defmacro el-spec:before (&rest body)
   `(el-spec:around
@@ -305,7 +305,7 @@
 
 (defadvice ert (around el-spec:ert-advice activate)
   (if (and (fboundp 'popwin:popup-buffer-tail)
-           (not (call-interactive-p)))
+           (not (called-interactively-p)))
       (let ((special-display-function 'popwin:popup-buffer-tail))
         ad-do-it
         (popwin:popup-buffer-tail "*ert*"))
@@ -324,7 +324,7 @@
 (make-variable-buffer-local 'el-spec:first-time-p)
 
 (defadvice eval-defun (around el-spec:eval-defun-advice activate)
-  (if (not (and (call-interactive-p)
+  (if (not (and (called-interactively-p)
                 (el-sepc:current-form-is-describe)))
       ad-do-it
     (ert-delete-all-tests)
