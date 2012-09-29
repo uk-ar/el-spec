@@ -15,7 +15,7 @@ You can install el-spec from github.
 ```lisp
 (auto-install-from-url "https://raw.github.com/uk-ar/el-spec/master/el-spec.el")
 ```
-Or you can install from marmalade.
+Or you can install it from marmalade.
 
 ```
 M-x package-install el-spec
@@ -25,8 +25,8 @@ M-x package-install el-spec
 
 ## Basic: Setup and Teardown
 
-You can use "before/after" macro for writing setup or teardown.
-Simple example is here.
+You can use the "before/after" macro for writing test setup or teardown.
+Simple example below.
 
 ```
 (require 'el-spec)
@@ -89,7 +89,7 @@ Simple example is here.
   )
 ```
 
-Run the example.
+Would output to *Messages*:
 
 ```
 before common
@@ -105,8 +105,9 @@ after 2
 after common
 ```
 
-You can also use "around" macro for wrapping example.
-This example is same as following example.
+You can also use the "around" macro for wrapping examples.
+The previous example is equivalent to the following example,
+and they have the same output.
 
 ```
 (describe "description"
@@ -134,19 +135,19 @@ This example is same as following example.
   )
 ```
 
-It is usefull to use "around" macro for "with-temp-buffer" or "let".
+It is useful to use the "around" macro with "with-temp-buffer" or "let".
 
 ## Advanced
 
-Here is step by step tutorial.
-Tutorial target is auto inserting paired parentheses.
+Here is a step by step tutorial.
+We will be writing specs for auto insterting parentheses code.
 
-The spec is
-- Inserting paired parenthese, braces, quotes when input open character.
-- Inserting only close pairs, when input close character.
+The code we are specing for will
+- Insert paired parentheses, braces, quotes when user inputs open character.
+- Only insert closed parentheses if a matching parenethesis does not exist.
 - Discovers which characters to pair based on the currently active syntax table.
 
-Simple example is here.
+Simple example below.
 
 ```
 (with-temp-buffer
@@ -172,7 +173,7 @@ Simple example is here.
   )
 ```
 
-You can use "around" macro for common use of "switch-to-buffer".
+You can use the "around" macro for common use of "switch-to-buffer".
 
 ```
 (describe "auto-pair"
@@ -197,11 +198,11 @@ You can use "around" macro for common use of "switch-to-buffer".
   )
 ```
 
-You can omit description string for it.
+You can omit the example description string for `it' macro calls, as shown above.
 
 ## Advanced: Using variables
 
-Let's make groups by major mode.
+Let's group specs by major mode.
 
 ```
 (describe "auto-pair"
@@ -232,7 +233,7 @@ Let's make groups by major mode.
   )
 ```
 
-You can use variables for major mode name.
+You can use variables for the major mode name.
 
 ```
 (describe ("auto-pair" :vars (mode))
@@ -261,7 +262,7 @@ You can use variables for major mode name.
 
 ## Advanced: Shared context
 
-Use shared_context to define a block that will be evaluated in the context of example groups either explicitly, using include_context, or implicitly by matching metadata.
+Use shared-context to define a block that will be evaluated in the context of example groups either explicitly, using include_context, or implicitly by matching metadata.
 
 For example, if you want to add examples in c-mode and emacs-lisp-mode.
 
@@ -335,11 +336,12 @@ You can use shared-context and include-context for common use of behavior.
   )
 ```
 
+
 ## Advanced: Shared examples
 
 Shared example groups let you describe behaviour of types or modules. When declared, a shared group's content is stored. It is only realized in the context of another example group, which provides any context the shared group needs to run.
 
-A shared group is included in another group using the include_examples methods.
+A shared group is included in another group using the include-examples methods.
 
 You can add examples in c-mode and emacs-lisp-mode.
 ```
