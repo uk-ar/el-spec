@@ -262,7 +262,7 @@ You can use variables for the major mode name.
 
 ## Advanced: Shared context
 
-Use shared-context to define a block that will be evaluated in the context of example groups either explicitly, using include_context, or implicitly by matching metadata.
+Use shared-context to define a block that will be evaluated in the context of example groups either explicitly, using include-context, or implicitly by matching metadata.
 
 For example, if you want to add examples in c-mode and emacs-lisp-mode.
 
