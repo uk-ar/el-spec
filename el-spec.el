@@ -96,6 +96,22 @@
 (require 'ert)
 (require 'cl)
 
+(defconst el-spec:separator "\n")
+
+;; internal variables
+(defvar el-spec:vars nil)
+(defvar el-spec:full-context nil)
+(defvar el-spec:descriptions nil)
+(defvar el-spec:example nil)
+(defvar el-spec:load-history nil)
+
+(defvar el-spec:selection 'all
+  ;; all or context
+  )
+(defvar el-spec:example-tag nil)
+;; Do not use buffer local variable.
+;; Because find-definition-noselect can not find definition.
+
 (defmacro el-spec:around (&rest body)
   `(push
     (lambda (el-spec:example)
@@ -143,8 +159,6 @@
 
 (defun el-spec:compose (f g)
   `(lambda () (funcall (function ,g) (function ,f))))
-
-(defconst el-spec:separator "\n")
 
 (defmacro el-spec:it (arglist &rest body)
   (declare (indent 1))
@@ -197,8 +211,6 @@
          )
        )
     ))
-
-(defvar el-spec:load-history nil)
 
 (defun el-spec:clean-up ()
   (setq el-spec:load-history
@@ -287,10 +299,6 @@
 (substitute-key-definition 'expectations-eval-defun 'eval-defun emacs-lisp-mode-map)
 (substitute-key-definition 'expectations-eval-defun 'eval-defun lisp-interaction-mode-map)
 
-(defvar el-spec:selection 'all
-  ;; all or context
-  )
-
 (defun el-spec:toggle-selection ()
   (interactive)
   (cond
@@ -305,7 +313,7 @@
 
 (defadvice ert (around el-spec:ert-advice activate)
   (if (and (fboundp 'popwin:popup-buffer-tail)
-           (not (called-interactively-p)))
+           (not (called-interactively-p 'interactive)))
       (let ((special-display-function 'popwin:popup-buffer-tail))
         ad-do-it
         (popwin:popup-buffer-tail "*ert*"))
@@ -323,8 +331,47 @@
 
 (make-variable-buffer-local 'el-spec:first-time-p)
 
+(defun el-spec:execute-examples ()
+  (save-excursion
+    (let ((test-name
+           (save-excursion
+             (forward-char)
+             (let ((symbol (substring-no-properties
+                            (or (thing-at-point 'symbol) ""))))
+               ;; (let ((symbol (or (el-spec:first-element) "")))
+               (if (or (string= symbol "it")
+                       (string= symbol "context")
+                       (string= symbol "describe"))
+                   (car-safe (rassoc (point) el-spec:example-tag)) nil)
+               ))))
+      (backward-char)
+      (el-spec:re-position)
+      (unless test-name
+        (condition-case err
+            (while (null test-name)
+              (backward-up-list)
+              (save-excursion
+                (el-spec:down-list)
+                (let ((symbol (substring-no-properties
+                               (or (thing-at-point 'symbol) ""))))
+                  ;; ((symbol (or (el-spec:first-element) "")))
+                  (if (or (string= symbol "it")
+                          (string= symbol "context")
+                          (string= symbol "describe"))
+                      (setq test-name
+                            (car-safe (rassoc (point) el-spec:example-tag)))))
+                ))
+          (scan-error
+           ;;top level
+           )))
+      (if test-name
+          (ert (concat "\\`" (regexp-quote (symbol-name test-name))))
+        (message "no example")
+        ))
+    ))
+
 (defadvice eval-defun (around el-spec:eval-defun-advice activate)
-  (if (not (and (called-interactively-p)
+  (if (not (and (called-interactively-p 'interactive)
                 (el-sepc:current-form-is-describe)))
       ad-do-it
     (ert-delete-all-tests)
@@ -377,49 +424,6 @@
   (or (nth 3 (syntax-ppss));string
       (nth 4 (syntax-ppss)));comment
   )
-
-(defvar el-spec:example-tag nil)
-;; Do not use buffer local variable.
-;; Because find-definition-noselect can not find definition.
-
-(defun el-spec:execute-examples ()
-  (save-excursion
-    (let ((test-name
-           (save-excursion
-             (forward-char)
-             (let ((symbol (substring-no-properties
-                            (or (thing-at-point 'symbol) ""))))
-               ;; (let ((symbol (or (el-spec:first-element) "")))
-               (if (or (string= symbol "it")
-                       (string= symbol "context")
-                       (string= symbol "describe"))
-                   (car-safe (rassoc (point) el-spec:example-tag)) nil)
-               ))))
-      (backward-char)
-      (el-spec:re-position)
-      (unless test-name
-        (condition-case err
-            (while (null test-name)
-              (backward-up-list)
-              (save-excursion
-                (el-spec:down-list)
-                (let ((symbol (substring-no-properties
-                               (or (thing-at-point 'symbol) ""))))
-                  ;; ((symbol (or (el-spec:first-element) "")))
-                  (if (or (string= symbol "it")
-                          (string= symbol "context")
-                          (string= symbol "describe"))
-                      (setq test-name
-                            (car-safe (rassoc (point) el-spec:example-tag)))))
-                ))
-          (scan-error
-           ;;top level
-           )))
-      (if test-name
-          (ert (concat "\\`" (regexp-quote (symbol-name test-name))))
-        (message "no example")
-        ))
-    ))
 
 (defmacro el-spec:shared-context (arglist &rest body)
   (declare (indent 1))
