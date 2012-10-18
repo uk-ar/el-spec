@@ -104,6 +104,7 @@
 (defvar el-spec:descriptions nil)
 (defvar el-spec:example nil)
 (defvar el-spec:load-history nil)
+(defvar el-spec:is-set-up nil)
 
 (defvar el-spec:selection 'all
   ;; all or context
@@ -220,47 +221,63 @@
 ;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Instrumenting-Macro-Calls.html#Instrumenting-Macro-Calls
 (defmacro describe (arglist &rest body)
   (declare (indent 1) (debug t))
-  ;; for failed test
-  (makunbound 'el-spec:full-context)
-  (makunbound 'el-spec:descriptions)
-  (makunbound 'el-spec:vars)
-  (add-hook
-   'kill-buffer-hook
-   'el-spec:clean-up nil t)
-  (el-spec:parse)
-  `(let ((el-spec:full-context nil)
-         (el-spec:descriptions nil)
-         (el-spec:vars nil))
-     ;; macrolet
-     (letf (((symbol-function 'around) (symbol-function 'el-spec:around))
-            ((symbol-function 'after) (symbol-function 'el-spec:after))
-            ((symbol-function 'before) (symbol-function 'el-spec:before))
-            ((symbol-function 'it) (symbol-function 'el-spec:it))
-            ((symbol-function 'context) (symbol-function 'el-spec:context))
-            ((symbol-function 'shared-context)
-             (symbol-function 'el-spec:shared-context))
-            ((symbol-function 'include-context)
-             (symbol-function 'el-spec:include-context))
-            ((symbol-function 'shared-examples)
-             (symbol-function 'el-spec:shared-examples))
-            ((symbol-function 'include-examples)
-             (symbol-function 'el-spec:include-examples))
-            )
-       (el-spec:context ,arglist
-         ,@body
-         ))
-     (let ((current-history (assoc (current-buffer) el-spec:load-history))
-           ;; for delete-dups
-           (current-load-list current-load-list))
-       (when current-history
-         (setq el-spec:load-history
-               (delq current-history el-spec:load-history)))
-       (push (append (list (current-buffer))
-                     (delete-dups current-load-list))
-             el-spec:load-history)
-       nil)
-     )
-  )
+  
+  (if el-spec:is-set-up
+      `(el-spec:context ,arglist
+         ,@body)
+
+    ;; el-spec needs to be set up
+
+    ;; makunbound for tests
+    (makunbound 'el-spec:full-context)
+    (makunbound 'el-spec:descriptions)
+    (makunbound 'el-spec:vars)
+    
+    (add-hook
+     'kill-buffer-hook
+     'el-spec:clean-up nil t)
+    (el-spec:parse)
+    `(let ((el-spec:full-context nil)
+           (el-spec:descriptions nil)
+           (el-spec:vars nil))
+       ;; macrolet
+       (letf (((symbol-function 'around) (symbol-function 'el-spec:around))
+              ((symbol-function 'after) (symbol-function 'el-spec:after))
+              ((symbol-function 'before) (symbol-function 'el-spec:before))
+              ((symbol-function 'it) (symbol-function 'el-spec:it))
+              ((symbol-function 'context) (symbol-function 'el-spec:context))
+              ((symbol-function 'shared-context)
+               (symbol-function 'el-spec:shared-context))
+              ((symbol-function 'include-context)
+               (symbol-function 'el-spec:include-context))
+              ((symbol-function 'shared-examples)
+               (symbol-function 'el-spec:shared-examples))
+              ((symbol-function 'include-examples)
+               (symbol-function 'el-spec:include-examples)))
+         
+         (let ((el-spec:is-set-up t))
+           (el-spec:context ,arglist ,@body)))
+       
+       (let ((current-history (assoc (current-buffer) el-spec:load-history))
+             ;; for delete-dups
+             (current-load-list current-load-list))
+         (when current-history
+           (setq el-spec:load-history
+                 (delq current-history el-spec:load-history)))
+         (push (append (list (current-buffer))
+                       (delete-dups current-load-list))
+               el-spec:load-history)
+         nil)
+       )))
+
+
+
+
+
+
+
+
+
 
 (put 'it 'lisp-indent-function 1)
 (put 'context 'lisp-indent-function 1)

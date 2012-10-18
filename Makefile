@@ -2,4 +2,4 @@ EMACS=emacs
 
 travis-ci:
 	${EMACS} --version
-	${EMACS} -batch -Q -l test/run-test.el
+	${EMACS} -batch -Q -l test/env.el -f 'el-spec:run-tests'

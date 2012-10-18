@@ -29,11 +29,15 @@
    'load-path
    (el-spec-test-join-path el-spec-root-dir "lib" "ert" "lisp" "emacs-lisp")))
 
-;; Load tests
-(load "el-spec-test")
 
+;; load all files that match -test.el except emacs temp filezzz
+(dolist (file (directory-files el-spec-test-dir
+                               t
+                               "^[^\.#].*-test.el"))
+  (load file))
 
 ;; Run tests
-(if noninteractive
-    (ert-run-tests-batch-and-exit)
-  (ert t))
+(defun el-spec:run-tests ()
+  (if noninteractive
+      (ert-run-tests-batch-and-exit)
+    (ert t)))
